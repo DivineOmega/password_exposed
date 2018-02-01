@@ -24,7 +24,7 @@ class PasswordExposedChecker
 
         sleep(2);
 
-        $response = $this->client->request('GET', 'pwnedpassword/'.$hash, ['exceptions' => false]);
+        $response = $this->makeRequest($hash);
 
         switch($response->getStatusCode()) {
             case 200: 
@@ -37,5 +37,17 @@ class PasswordExposedChecker
         $responseBody = (string) $response->getBody();
 
         throw new Exception('Unexpected response from password exposed check: '.$responseBody);
+    }
+
+    private function makeRequest($hash)
+    {
+        $options = [
+            'exceptions' => false,
+            'headers' => [
+                'User_Agent' => 'password_exposed - https://github.com/DivineOmega/password_exposed'
+            ]
+        ];
+
+        return $this->client->request('GET', 'pwnedpassword/'.$hash, $options);
     }
 }
