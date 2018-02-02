@@ -6,14 +6,14 @@ use Exception;
 use GuzzleHttp\Client;
 
 class PasswordExposedChecker
-{   
+{
     private $client;
 
     public function __construct()
     {
         $this->client = new Client([
             'base_uri' => 'https://haveibeenpwned.com/api/v2/',
-            'timeout' => 3.0
+            'timeout'  => 3.0,
         ]);
     }
 
@@ -26,8 +26,8 @@ class PasswordExposedChecker
 
         $response = $this->makeRequest($hash);
 
-        switch($response->getStatusCode()) {
-            case 200: 
+        switch ($response->getStatusCode()) {
+            case 200:
                 return true;
 
             case 404:
@@ -43,9 +43,9 @@ class PasswordExposedChecker
     {
         $options = [
             'exceptions' => false,
-            'headers' => [
-                'User_Agent' => 'password_exposed - https://github.com/DivineOmega/password_exposed'
-            ]
+            'headers'    => [
+                'User_Agent' => 'password_exposed - https://github.com/DivineOmega/password_exposed',
+            ],
         ];
 
         return $this->client->request('GET', 'pwnedpassword/'.$hash, $options);
