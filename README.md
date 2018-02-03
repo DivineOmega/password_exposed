@@ -19,14 +19,14 @@ If you have never used the Composer dependency manager before, head to the [Comp
 
 ## Usage
 
-To check if a password has been exposed in a data breach, just pass it to the `is_offensive` method.
+To check if a password has been exposed in a data breach, just pass it to the `password_exposed` method.
 
 Here are a few examples:
 
 ```php
-is_offensive('test');  // true
-is_offensive('password');   // true
-is_offensive('hunter2');  // true
+password_exposed('test');  // true
+password_exposed('password');   // true
+password_exposed('hunter2');  // true
 
-is_offensive('cat bike duck cheese monkey fat');   // false (hopefully!)
+password_exposed('cat bike duck cheese monkey fat');   // false (hopefully!)
 ```
