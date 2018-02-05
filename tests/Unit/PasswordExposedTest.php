@@ -1,7 +1,6 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use Faker\Factory;
 
 class PasswordExposedTest extends TestCase
 {
@@ -15,7 +14,7 @@ class PasswordExposedTest extends TestCase
     {
         $passwords = ['test', 'password', 'hunter2'];
 
-        foreach($passwords as $password) {
+        foreach ($passwords as $password) {
             $this->assertTrue(password_exposed('test'));
         }
     }
@@ -31,7 +30,7 @@ class PasswordExposedTest extends TestCase
 
         $password = '';
 
-        for ($i=0; $i < 6; $i++) { 
+        for ($i = 0; $i < 6; $i++) {
             $password .= $faker->word();
             $password .= ' ';
         }
