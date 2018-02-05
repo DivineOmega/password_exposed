@@ -9,7 +9,7 @@ class PasswordExposedTest extends TestCase
         $this->assertTrue(function_exists('password_exposed'));
     }
 
-    /*
+    
     public function testExposedPasswords()
     {
         $passwords = ['test', 'password', 'hunter2'];
@@ -39,6 +39,6 @@ class PasswordExposedTest extends TestCase
 
         return $password;
     }
-    */
+    
 
 }
