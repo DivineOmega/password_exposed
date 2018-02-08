@@ -15,7 +15,7 @@ class PasswordExposedTest extends TestCase
         $passwords = ['test', 'password', 'hunter2'];
 
         foreach ($passwords as $password) {
-            $this->assertEquals(password_exposed('test'), PasswordStatus::EXPOSED);
+            $this->assertEquals(password_exposed($password), PasswordStatus::EXPOSED);
         }
     }
 
