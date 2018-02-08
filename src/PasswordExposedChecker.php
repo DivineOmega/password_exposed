@@ -10,7 +10,7 @@ class PasswordExposedChecker
     private $client;
     private $cache;
 
-    const CACHE_EXPIRY_SECONDS = 60*60*24*30;
+    const CACHE_EXPIRY_SECONDS = 60 * 60 * 24 * 30;
 
     public function __construct()
     {
@@ -19,9 +19,9 @@ class PasswordExposedChecker
             'timeout'  => 3.0,
         ]);
 
-        $this->cache = new CacheItemPool;
+        $this->cache = new CacheItemPool();
         $this->cache->changeConfig([
-            'cacheDirectory' => '/tmp/password-exposed-cache/'
+            'cacheDirectory' => '/tmp/password-exposed-cache/',
         ]);
     }
 
