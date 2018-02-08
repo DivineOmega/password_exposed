@@ -1,7 +1,7 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
 use DivineOmega\PasswordExposed\PasswordStatus;
+use PHPUnit\Framework\TestCase;
 
 class PasswordExposedTest extends TestCase
 {
@@ -10,7 +10,6 @@ class PasswordExposedTest extends TestCase
         $this->assertTrue(function_exists('password_exposed'));
     }
 
-    
     public function testExposedPasswords()
     {
         $passwords = ['test', 'password', 'hunter2'];
@@ -40,6 +39,4 @@ class PasswordExposedTest extends TestCase
 
         return $password;
     }
-    
-
 }
