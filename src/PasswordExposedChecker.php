@@ -3,16 +3,25 @@
 namespace DivineOmega\PasswordExposed;
 
 use GuzzleHttp\Client;
+use rapidweb\RWFileCachePSR6\CacheItemPool;
 
 class PasswordExposedChecker
 {
     private $client;
+    private $cache;
+
+    const CACHE_EXPIRY_SECONDS = 60*60*24*30;
 
     public function __construct()
     {
         $this->client = new Client([
             'base_uri' => 'https://haveibeenpwned.com/api/v2/',
             'timeout'  => 3.0,
+        ]);
+
+        $this->cache = new CacheItemPool;
+        $this->cache->changeConfig([
+            'cacheDirectory' => '/tmp/password-exposed-cache/'
         ]);
     }
 
@@ -21,19 +30,37 @@ class PasswordExposedChecker
         $hash = sha1($password);
         unset($password);
 
+        $cacheKey = 'pw_exposed_'.$hash;
+
+        $cacheItem = $this->cache->getItem($cacheKey);
+
+        if ($cacheItem->isHit()) {
+            return $cacheItem->get();
+        }
+
         sleep(2);
 
         $response = $this->makeRequest($hash);
 
+        $status = PasswordStatus::UNKNOWN;
+
         switch ($response->getStatusCode()) {
             case 200:
-                return PasswordStatus::EXPOSED;
+                $status = PasswordStatus::EXPOSED;
+                break;
 
             case 404:
-                return PasswordStatus::NOT_EXPOSED;
+                $status = PasswordStatus::NOT_EXPOSED;
+                break;
         }
 
-        return PasswordStatus::UNKNOWN;
+        if (in_array($status, [PasswordStatus::EXPOSED, PasswordStatus::NOT_EXPOSED])) {
+            $cacheItem->set($status);
+            $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
+            $this->cache->save($cacheItem);
+        }
+
+        return $status;
     }
 
     private function makeRequest($hash)

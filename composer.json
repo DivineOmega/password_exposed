@@ -23,6 +23,7 @@
     },
     "license": "LGPL-3.0-only",
     "require": {
-        "guzzlehttp/guzzle": "^6.3"
+        "guzzlehttp/guzzle": "^6.3",
+        "rapidwebltd/rw-file-cache-psr-6": "^1.0"
     }
 }
