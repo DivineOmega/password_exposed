@@ -2,7 +2,6 @@
 
 namespace DivineOmega\PasswordExposed;
 
-use Exception;
 use GuzzleHttp\Client;
 
 class PasswordExposedChecker
