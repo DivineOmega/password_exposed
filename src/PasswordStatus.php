@@ -4,7 +4,7 @@ namespace DivineOmega\PasswordExposed;
 
 abstract class PasswordStatus
 {
-    const EXPOSED = 1;
-    const NOT_EXPOSED = 0;
-    const UNKNOWN = 2;
+    const NOT_EXPOSED = 'not_exposed';
+    const EXPOSED = 'exposed';
+    const UNKNOWN = 'unknown';
 }
