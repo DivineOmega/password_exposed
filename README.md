@@ -21,12 +21,21 @@ If you have never used the Composer dependency manager before, head to the [Comp
 
 To check if a password has been exposed in a data breach, just pass it to the `password_exposed` method.
 
-Here are a few examples:
+Here is a basic usage example:
 
 ```php
-password_exposed('test');  // true
-password_exposed('password');   // true
-password_exposed('hunter2');  // true
+switch(password_exposed('hunter2')) {
 
-password_exposed('cat bike duck cheese monkey fat');   // false (hopefully!)
+    case PasswordStatus::EXPOSED:
+        // Password has been exposed in a data breach.
+        break;
+
+    case PasswordStatus::NOT_EXPOSED:
+        // Password has not been exposed in a known data breach.
+        break;
+
+    case PasswordStatus::UNKNOWN:
+        // Unable to check password due to an API error.
+        break;
+}
 ```

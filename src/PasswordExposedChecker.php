@@ -28,15 +28,13 @@ class PasswordExposedChecker
 
         switch ($response->getStatusCode()) {
             case 200:
-                return true;
+                return PasswordStatus::EXPOSED;
 
             case 404:
-                return false;
+                return PasswordStatus::NOT_EXPOSED;
         }
 
-        $responseBody = (string) $response->getBody();
-
-        throw new Exception('Unexpected response from password exposed check: '.$responseBody);
+        return PasswordStatus::UNKNOWN;
     }
 
     private function makeRequest($hash)

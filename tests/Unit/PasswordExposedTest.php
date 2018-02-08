@@ -1,6 +1,7 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
+use DivineOmega\PasswordExposed\PasswordStatus;
 
 class PasswordExposedTest extends TestCase
 {
@@ -15,13 +16,13 @@ class PasswordExposedTest extends TestCase
         $passwords = ['test', 'password', 'hunter2'];
 
         foreach ($passwords as $password) {
-            $this->assertTrue(password_exposed('test'));
+            $this->assertEquals(password_exposed('test'), PasswordStatus::EXPOSED);
         }
     }
 
     public function testNotExposedPasswords()
     {
-        $this->assertFalse(password_exposed($this->getPasswordUnlikelyToBeExposed()));
+        $this->assertEquals(password_exposed($this->getPasswordUnlikelyToBeExposed()), PasswordStatus::NOT_EXPOSED);
     }
 
     private function getPasswordUnlikelyToBeExposed()
