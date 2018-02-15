@@ -3,8 +3,8 @@
 namespace DivineOmega\PasswordExposed;
 
 use GuzzleHttp\Client;
-use rapidweb\RWFileCachePSR6\CacheItemPool;
 use GuzzleHttp\Psr7\Response;
+use rapidweb\RWFileCachePSR6\CacheItemPool;
 
 class PasswordExposedChecker
 {
@@ -91,21 +91,20 @@ class PasswordExposedChecker
     {
         $startTime = time();
 
-        while(true) {
-
+        while (true) {
             $lastRequestCacheItem = $this->cache->getItem('last_request');
             if (!$lastRequestCacheItem->isHit() || $lastRequestCacheItem->get() < time() - self::TIME_BETWEEN_REQUESTS_SECONDS) {
                 $lastRequestCacheItem->set(time());
                 $this->cache->save($lastRequestCacheItem);
+
                 return true;
             }
-            
+
             if ($startTime < time() - self::WAIT_TIMEOUT_SECONDS) {
                 return false;
             }
-            
-            sleep(1);
 
+            sleep(1);
         }
     }
 }
