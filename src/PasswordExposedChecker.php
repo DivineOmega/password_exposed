@@ -64,7 +64,7 @@ class PasswordExposedChecker
 
     private function getPasswordStatus($hash, Response $response)
     {
-        if ($response->getStatusCode()!==200) {
+        if ($response->getStatusCode() !== 200) {
             return PasswordStatus::UNKNOWN;
         }
 
@@ -75,15 +75,13 @@ class PasswordExposedChecker
 
         $lines = explode("\r\n", $body);
 
-        foreach($lines as $line) {
+        foreach ($lines as $line) {
             list($exposedHashSuffix, $occurrences) = explode(':', $line);
-            if ($hashSuffix==$exposedHashSuffix) {
+            if ($hashSuffix == $exposedHashSuffix) {
                 return PasswordStatus::EXPOSED;
             }
         }
 
         return PasswordStatus::NOT_EXPOSED;
-
     }
-
 }
