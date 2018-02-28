@@ -31,7 +31,7 @@ class PasswordExposedChecker
         $hash = sha1($password);
         unset($password);
 
-        $cacheKey = 'pw_exposed_'.$hash;
+        $cacheKey = substr($hash, 0, 2).'_'.substr($hash, 2);
 
         $cacheItem = $this->cache->getItem($cacheKey);
 
