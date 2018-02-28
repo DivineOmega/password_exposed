@@ -5,6 +5,7 @@ namespace DivineOmega\PasswordExposed;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use rapidweb\RWFileCachePSR6\CacheItemPool;
+use GuzzleHttp\Exception\ConnectException;
 
 class PasswordExposedChecker
 {
@@ -39,7 +40,12 @@ class PasswordExposedChecker
             return $cacheItem->get();
         }
 
-        $status = $this->getPasswordStatus($hash, $this->makeRequest($hash));
+        $status = PasswordStatus::UNKNOWN;
+
+        try {
+            $status = $this->getPasswordStatus($hash, $this->makeRequest($hash));
+        } catch (ConnectException $e) {
+        }
 
         if (in_array($status, [PasswordStatus::EXPOSED, PasswordStatus::NOT_EXPOSED])) {
             $cacheItem->set($status);
