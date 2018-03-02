@@ -4,7 +4,6 @@ namespace DivineOmega\PasswordExposed;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
-use GuzzleHttp\Psr7\Response;
 use rapidweb\RWFileCachePSR6\CacheItemPool;
 
 class PasswordExposedChecker
