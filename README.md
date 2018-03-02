@@ -11,7 +11,7 @@
     </a>
 </p>
 
-# About `password_exposed` helper function
+# `password_exposed` helper function
 
 This PHP package provides a `password_exposed` helper function, that uses the haveibeenpwned.com API to check if a password has been exposed in a data breach.
 
