@@ -1,3 +1,7 @@
+# `password_exposed` helper function
+
+This PHP package provides a `password_exposed` helper function, that uses the haveibeenpwned.com API to check if a password has been exposed in a data breach.
+
 <p align="center">
     <img src="assets/images/password-exposed.png">
 </p>
@@ -10,10 +14,6 @@
         <img src="https://styleci.io/repos/119845896/shield?branch=master" alt="StyleCI" />
     </a>
 </p>
-
-# `password_exposed` helper function
-
-This PHP package provides a `password_exposed` helper function, that uses the haveibeenpwned.com API to check if a password has been exposed in a data breach.
 
 ## Installation
 
