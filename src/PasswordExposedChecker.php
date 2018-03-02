@@ -2,28 +2,38 @@
 
 namespace DivineOmega\PasswordExposed;
 
+use Doctrine\Common\Cache\FilesystemCache;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
-use rapidweb\RWFileCachePSR6\CacheItemPool;
+use Kevinrob\GuzzleCache\CacheMiddleware;
+use Kevinrob\GuzzleCache\Storage\DoctrineCacheStorage;
+use Kevinrob\GuzzleCache\Strategy\PrivateCacheStrategy;
 
 class PasswordExposedChecker
 {
     private $client;
-    private $cache;
-
-    const CACHE_EXPIRY_SECONDS = 60 * 60 * 24 * 30;
 
     public function __construct()
     {
+        $stack = HandlerStack::create();
+
+        $stack->push(
+            new CacheMiddleware(
+                new PrivateCacheStrategy(
+                    new DoctrineCacheStorage(
+                        new FilesystemCache(sys_get_temp_dir().'/pwned-passwords-cache')
+                    )
+                )
+            ),
+            'cache'
+        );
+
         $this->client = new Client([
+            'handler'  => $stack,
             'base_uri' => 'https://api.pwnedpasswords.com/',
             'timeout'  => 3.0,
-        ]);
-
-        $this->cache = new CacheItemPool();
-        $this->cache->changeConfig([
-            'cacheDirectory' => '/tmp/password-exposed-cache/',
         ]);
     }
 
@@ -32,25 +42,11 @@ class PasswordExposedChecker
         $hash = sha1($password);
         unset($password);
 
-        $cacheKey = substr($hash, 0, 2).'_'.substr($hash, 2);
-
-        $cacheItem = $this->cache->getItem($cacheKey);
-
-        if ($cacheItem->isHit()) {
-            return $cacheItem->get();
-        }
-
         $status = PasswordStatus::UNKNOWN;
 
         try {
             $status = $this->getPasswordStatus($hash, $this->makeRequest($hash));
         } catch (ConnectException $e) {
-        }
-
-        if (in_array($status, [PasswordStatus::EXPOSED, PasswordStatus::NOT_EXPOSED])) {
-            $cacheItem->set($status);
-            $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
-            $this->cache->save($cacheItem);
         }
 
         return $status;
