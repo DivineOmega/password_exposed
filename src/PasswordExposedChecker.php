@@ -36,11 +36,8 @@ class PasswordExposedChecker
         $cacheItem = $this->cache->getItem($cacheKey);
 
         if ($cacheItem->isHit()) {
-
             $responseBody = $cacheItem->get();
-
         } else {
-
             try {
                 $response = $this->makeRequest($hash);
             } catch (ConnectException $e) {
@@ -52,7 +49,6 @@ class PasswordExposedChecker
             }
 
             $responseBody = (string) $response->getBody();
-
         }
 
         $cacheItem->set($responseBody);
