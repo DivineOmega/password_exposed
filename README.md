@@ -1,12 +1,18 @@
 # 🔒 Password Exposed Helper Function
 
-[![Build Status](https://travis-ci.org/DivineOmega/password_exposed.svg?branch=master)](https://travis-ci.org/DivineOmega/password_exposed)
-[![StyleCI](https://styleci.io/repos/119845896/shield?branch=master)](https://styleci.io/repos/119845896)
-
 This PHP package provides a `password_exposed` helper function, that uses the haveibeenpwned.com API to check if a password has been exposed in a data breach.
 
 <p align="center">
     <img src="assets/images/password-exposed.png">
+</p>
+
+<p align="center">
+    <a href="https://travis-ci.org/DivineOmega/password_exposed">
+        <img src="https://travis-ci.org/DivineOmega/password_exposed.svg?branch=master" alt="Build Status" />
+    </a>
+    <a href="https://styleci.io/repos/119845896">
+        <img src="https://styleci.io/repos/119845896/shield?branch=master" alt="StyleCI" />
+    </a>
 </p>
 
 ## Installation
