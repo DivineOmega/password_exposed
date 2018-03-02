@@ -83,7 +83,7 @@ class PasswordExposedChecker
 
         foreach ($lines as $line) {
             list($exposedHashSuffix, $occurrences) = explode(':', $line);
-            if ($hashSuffix == $exposedHashSuffix) {
+            if (hash_equals($hashSuffix, $exposedHashSuffix)) {
                 return PasswordStatus::EXPOSED;
             }
         }
