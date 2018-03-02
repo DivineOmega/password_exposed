@@ -24,6 +24,7 @@
     "license": "LGPL-3.0-only",
     "require": {
         "guzzlehttp/guzzle": "^6.3",
-        "rapidwebltd/rw-file-cache-psr-6": "^1.0"
+        "kevinrob/guzzle-cache-middleware": "^3.2",
+        "doctrine/cache": "^1.7"
     }
 }
