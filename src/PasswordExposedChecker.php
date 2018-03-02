@@ -10,7 +10,6 @@ use GuzzleHttp\Psr7\Response;
 use Kevinrob\GuzzleCache\CacheMiddleware;
 use Kevinrob\GuzzleCache\Storage\DoctrineCacheStorage;
 use Kevinrob\GuzzleCache\Strategy\PrivateCacheStrategy;
-use rapidweb\RWFileCachePSR6\CacheItemPool;
 
 class PasswordExposedChecker
 {
@@ -24,7 +23,7 @@ class PasswordExposedChecker
             new CacheMiddleware(
                 new PrivateCacheStrategy(
                     new DoctrineCacheStorage(
-                        new FilesystemCache(sys_get_temp_dir() . '/pwned-passwords-cache')
+                        new FilesystemCache(sys_get_temp_dir().'/pwned-passwords-cache')
                     )
                 )
             ),
