@@ -4,7 +4,6 @@ namespace DivineOmega\PasswordExposed;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
-use GuzzleHttp\Psr7\Response;
 use rapidweb\RWFileCachePSR6\CacheItemPool;
 
 class PasswordExposedChecker
@@ -32,28 +31,31 @@ class PasswordExposedChecker
         $hash = sha1($password);
         unset($password);
 
-        $cacheKey = substr($hash, 0, 2).'_'.substr($hash, 2);
+        $cacheKey = substr($hash, 0, 2).'_'.substr($hash, 2, 3);
 
         $cacheItem = $this->cache->getItem($cacheKey);
 
         if ($cacheItem->isHit()) {
-            return $cacheItem->get();
+            $responseBody = $cacheItem->get();
+        } else {
+            try {
+                $response = $this->makeRequest($hash);
+            } catch (ConnectException $e) {
+                return PasswordStatus::UNKNOWN;
+            }
+
+            if ($response->getStatusCode() !== 200) {
+                return PasswordStatus::UNKNOWN;
+            }
+
+            $responseBody = (string) $response->getBody();
         }
 
-        $status = PasswordStatus::UNKNOWN;
+        $cacheItem->set($responseBody);
+        $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
+        $this->cache->save($cacheItem);
 
-        try {
-            $status = $this->getPasswordStatus($hash, $this->makeRequest($hash));
-        } catch (ConnectException $e) {
-        }
-
-        if (in_array($status, [PasswordStatus::EXPOSED, PasswordStatus::NOT_EXPOSED])) {
-            $cacheItem->set($status);
-            $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
-            $this->cache->save($cacheItem);
-        }
-
-        return $status;
+        return $this->getPasswordStatus($hash, $responseBody);
     }
 
     private function makeRequest($hash)
@@ -68,18 +70,12 @@ class PasswordExposedChecker
         return $this->client->request('GET', 'range/'.substr($hash, 0, 5), $options);
     }
 
-    private function getPasswordStatus($hash, Response $response)
+    private function getPasswordStatus($hash, $responseBody)
     {
-        if ($response->getStatusCode() !== 200) {
-            return PasswordStatus::UNKNOWN;
-        }
-
         $hash = strtoupper($hash);
         $hashSuffix = substr($hash, 5);
 
-        $body = (string) $response->getBody();
-
-        $lines = explode("\r\n", $body);
+        $lines = explode("\r\n", $responseBody);
 
         foreach ($lines as $line) {
             list($exposedHashSuffix, $occurrences) = explode(':', $line);
