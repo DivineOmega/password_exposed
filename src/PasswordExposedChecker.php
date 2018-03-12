@@ -4,11 +4,20 @@ namespace DivineOmega\PasswordExposed;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
+use ParagonIE\Certainty\Bundle;
+use ParagonIE\Certainty\RemoteFetch;
+use Psr\Http\Message\ResponseInterface;
 use rapidweb\RWFileCachePSR6\CacheItemPool;
 
 class PasswordExposedChecker
 {
+    /** @var Bundle $bundle */
+    private $bundle;
+
+    /** @var Client $client */
     private $client;
+
+    /** @var CacheItemPool $cache */
     private $cache;
 
     const CACHE_EXPIRY_SECONDS = 60 * 60 * 24 * 30;
@@ -24,8 +33,15 @@ class PasswordExposedChecker
         $this->cache->changeConfig([
             'cacheDirectory' => '/tmp/password-exposed-cache/',
         ]);
+
+        $this->bundle = (new RemoteFetch())->getLatestBundle();
     }
 
+    /**
+     * @param string $password
+     *
+     * @return string (see PasswordStatus)
+     */
     public function passwordExposed($password)
     {
         $hash = sha1($password);
@@ -36,9 +52,11 @@ class PasswordExposedChecker
         $cacheItem = $this->cache->getItem($cacheKey);
 
         if ($cacheItem->isHit()) {
+            /** @var string $responseBody */
             $responseBody = $cacheItem->get();
         } else {
             try {
+                /** @var ResponseInterface $response */
                 $response = $this->makeRequest($hash);
             } catch (ConnectException $e) {
                 return PasswordStatus::UNKNOWN;
@@ -48,6 +66,7 @@ class PasswordExposedChecker
                 return PasswordStatus::UNKNOWN;
             }
 
+            /** @var string $responseBody */
             $responseBody = (string) $response->getBody();
         }
 
@@ -58,6 +77,11 @@ class PasswordExposedChecker
         return $this->getPasswordStatus($hash, $responseBody);
     }
 
+    /**
+     * @param string $hash
+     *
+     * @return \Psr\Http\Message\ResponseInterface
+     */
     private function makeRequest($hash)
     {
         $options = [
@@ -65,11 +89,18 @@ class PasswordExposedChecker
             'headers'    => [
                 'User_Agent' => 'password_exposed - https://github.com/DivineOmega/password_exposed',
             ],
+            'verify' => ($this->bundle->getFilePath()),
         ];
 
         return $this->client->request('GET', 'range/'.substr($hash, 0, 5), $options);
     }
 
+    /**
+     * @param string $hash
+     * @param string $responseBody
+     *
+     * @return string
+     */
     private function getPasswordStatus($hash, $responseBody)
     {
         $hash = strtoupper($hash);
