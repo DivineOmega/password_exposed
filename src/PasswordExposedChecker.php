@@ -22,19 +22,28 @@ class PasswordExposedChecker
 
     const CACHE_EXPIRY_SECONDS = 60 * 60 * 24 * 30;
 
-    public function __construct()
+    public function __construct(Client $client = null, CacheItemPool $cache = null, Bundle $bundle = null)
     {
-        $this->client = new Client([
-            'base_uri' => 'https://api.pwnedpasswords.com/',
-            'timeout'  => 3.0,
-        ]);
+        if (!$client) {
+            $client = new Client([
+                'base_uri' => 'https://api.pwnedpasswords.com/',
+                'timeout'  => 3.0,
+            ]);
+        }
+        $this->client = $client;
 
-        $this->cache = new CacheItemPool();
-        $this->cache->changeConfig([
-            'cacheDirectory' => '/tmp/password-exposed-cache/',
-        ]);
+        if (!$cache) {
+            $cache = new CacheItemPool();
+            $cache->changeConfig([
+                'cacheDirectory' => '/tmp/password-exposed-cache/',
+            ]);
+        }
+        $this->cache = $cache;
 
-        $this->bundle = (new RemoteFetch())->getLatestBundle();
+        if (!$bundle) {
+            $bundle = (new RemoteFetch())->getLatestBundle();
+        }
+        $this->bundle = $bundle;
     }
 
     /**
