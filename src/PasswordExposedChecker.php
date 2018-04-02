@@ -49,11 +49,11 @@ class PasswordExposedChecker
 
     private function getBundleFromCertainty()
     {
-        $localCertaintyDataDir = __DIR__.'/../bundles/';
+        $ourCertaintyDataDir = __DIR__.'/../bundles/';
 
-        if (!is_writable($localCertaintyDataDir)) {
+        if (!is_writable($ourCertaintyDataDir)) {
 
-            // If we can't write to the local Certainty data directory, just
+            // If we can't write to the our Certainty data directory, just
             // use the latest bundle from the Certainty package.
             return (new Fetch())->getLatestBundle();
 
@@ -69,7 +69,7 @@ class PasswordExposedChecker
 
                 // If the platform can run verification checks well enough, get
                 // latest remote bundle and verify it.
-                return (new RemoteFetch($localCertaintyDataDir))->getLatestBundle();
+                return (new RemoteFetch($ourCertaintyDataDir))->getLatestBundle();
 
             }
         }
