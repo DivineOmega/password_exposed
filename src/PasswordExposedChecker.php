@@ -47,6 +47,9 @@ class PasswordExposedChecker
         $this->bundle = $bundle;
     }
 
+    /**
+     * @return Bundle
+     */
     private function getBundleFromCertainty()
     {
         $ourCertaintyDataDir = __DIR__.'/../bundles/';
