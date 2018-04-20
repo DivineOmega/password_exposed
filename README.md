@@ -13,6 +13,7 @@ This PHP package provides a `password_exposed` helper function, that uses the ha
     <a href="https://styleci.io/repos/119845896">
         <img src="https://styleci.io/repos/119845896/shield?branch=master" alt="StyleCI" />
     </a>
+    <img src="https://img.shields.io/packagist/dt/DivineOmega/password_exposed.svg" />
 </p>
 
 ## Installation
