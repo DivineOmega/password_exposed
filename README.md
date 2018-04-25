@@ -48,3 +48,9 @@ switch(password_exposed('hunter2')) {
         break;
 }
 ```
+
+If you prefer to avoid using helper functions, the following syntax is also available.
+
+```
+$passwordStatus = (new PasswordExposedChecker())->passwordExposed($password);
+```
