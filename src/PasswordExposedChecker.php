@@ -2,13 +2,13 @@
 
 namespace DivineOmega\PasswordExposed;
 
+use DivineOmega\DOFileCachePSR6\CacheItemPool;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use ParagonIE\Certainty\Bundle;
 use ParagonIE\Certainty\Fetch;
 use ParagonIE\Certainty\RemoteFetch;
 use Psr\Http\Message\ResponseInterface;
-use DivineOmega\DOFileCachePSR6\CacheItemPool;
 
 class PasswordExposedChecker
 {
