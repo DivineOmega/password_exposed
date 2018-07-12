@@ -8,7 +8,7 @@ use ParagonIE\Certainty\Bundle;
 use ParagonIE\Certainty\Fetch;
 use ParagonIE\Certainty\RemoteFetch;
 use Psr\Http\Message\ResponseInterface;
-use rapidweb\RWFileCachePSR6\CacheItemPool;
+use DivineOmega\DOFileCachePSR6\CacheItemPool;
 
 class PasswordExposedChecker
 {

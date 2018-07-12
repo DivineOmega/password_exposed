@@ -1,4 +1,6 @@
 composer.lock
 vendor
 bundles/*
-!bundles/.gitkeep
+!bundles/.
+
+.idea
