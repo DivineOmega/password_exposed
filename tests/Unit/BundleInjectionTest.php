@@ -1,5 +1,7 @@
 <?php
 
+namespace DivineOmega\PasswordExposed\Tests;
+
 use DivineOmega\PasswordExposed\PasswordExposedChecker;
 use DivineOmega\PasswordExposed\PasswordStatus;
 use ParagonIE\Certainty\Bundle;
