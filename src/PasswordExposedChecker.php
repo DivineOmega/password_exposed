@@ -36,7 +36,7 @@ class PasswordExposedChecker
         if (!$cache) {
             $cache = new CacheItemPool();
             $cache->changeConfig([
-                'cacheDirectory' => sys_get_temp_dir() . '/password-exposed-cache/',
+                'cacheDirectory' => sys_get_temp_dir().'/password-exposed-cache/',
             ]);
         }
         $this->cache = $cache;
