@@ -29,7 +29,7 @@
     },
     "license": "LGPL-3.0-only",
     "require": {
-        "php": ">=7.0",
+        "php": ">=7.1",
         "guzzlehttp/guzzle": "^6.3",
         "paragonie/certainty": "^1",
         "divineomega/do-file-cache-psr-6": "^2.0"
