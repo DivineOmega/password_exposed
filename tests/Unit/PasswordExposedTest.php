@@ -1,6 +1,9 @@
 <?php
 
+namespace DivineOmega\PasswordExposed\Tests;
+
 use DivineOmega\PasswordExposed\PasswordStatus;
+use Faker\Factory;
 use PHPUnit\Framework\TestCase;
 
 class PasswordExposedTest extends TestCase
@@ -10,13 +13,21 @@ class PasswordExposedTest extends TestCase
         $this->assertTrue(function_exists('password_exposed'));
     }
 
-    public function testExposedPasswords()
+    public function exposedPasswordsProvider()
     {
-        $passwords = ['test', 'password', 'hunter2'];
+        return [
+            ['test'],
+            ['password'],
+            ['hunter2'],
+        ];
+    }
 
-        foreach ($passwords as $password) {
-            $this->assertEquals(password_exposed($password), PasswordStatus::EXPOSED);
-        }
+    /**
+     * @dataProvider exposedPasswordsProvider
+     */
+    public function testExposedPasswords($password)
+    {
+        $this->assertEquals(password_exposed($password), PasswordStatus::EXPOSED);
     }
 
     public function testNotExposedPasswords()
@@ -26,7 +37,7 @@ class PasswordExposedTest extends TestCase
 
     private function getPasswordUnlikelyToBeExposed()
     {
-        $faker = Faker\Factory::create();
+        $faker = Factory::create();
 
         $password = '';
 

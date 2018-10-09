@@ -9,7 +9,7 @@
         }
     ],
     "require-dev": {
-        "phpunit/phpunit": "^5.7",
+        "phpunit/phpunit": "^6.5",
         "fzaninotto/faker": "^1.7",
         "vimeo/psalm": "^1",
         "php-coveralls/php-coveralls": "^2.1"
@@ -21,6 +21,11 @@
         "files": [
             "src/PasswordExposedFunction.php"
         ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DivineOmega\\PasswordExposed\\Tests\\": "tests/"
+        }
     },
     "license": "LGPL-3.0-only",
     "require": {
