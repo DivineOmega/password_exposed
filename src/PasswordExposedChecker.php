@@ -81,9 +81,16 @@ class PasswordExposedChecker
      */
     public function passwordExposed($password)
     {
-        $hash = sha1($password);
-        unset($password);
+        return $this->passwordExposedByHash(sha1($password));
+    }
 
+    /**
+     * @param string $hash Hexadecimal SHA-1 hash of the password
+     *
+     * @return string (see PasswordStatus)
+     */
+    public function passwordExposedByHash($hash)
+    {
         $cacheKey = substr($hash, 0, 2).'_'.substr($hash, 2, 3);
 
         $cacheItem = $this->cache->getItem($cacheKey);
