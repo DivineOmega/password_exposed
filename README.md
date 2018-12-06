@@ -56,3 +56,9 @@ If you prefer to avoid using helper functions, the following syntax is also avai
 ```php
 $passwordStatus = (new PasswordExposedChecker())->passwordExposed($password);
 ```
+
+You can also supply the SHA1 hash instead of the plain text password, by using the following method.
+
+```php
+$passwordStatus = (new PasswordExposedChecker())->passwordExposedByHash($hash);
+```
