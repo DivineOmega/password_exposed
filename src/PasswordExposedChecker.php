@@ -58,13 +58,13 @@ class PasswordExposedChecker
 
             // If we can't write to the our Certainty data directory, just
             // use the latest bundle from the Certainty package.
-            return (new Fetch())->getLatestBundle();
+            return (new Fetch($ourCertaintyDataDir))->getLatestBundle();
         } else {
             if (PHP_INT_SIZE === 4 && !extension_loaded('sodium')) {
 
                 // If the platform would run verification checks slowly, use the
                 // latest bundle from the Certainty package and disable verification.
-                return (new Fetch())->getLatestBundle(false, false);
+                return (new Fetch($ourCertaintyDataDir))->getLatestBundle(false, false);
             } else {
 
                 // If the platform can run verification checks well enough, get
