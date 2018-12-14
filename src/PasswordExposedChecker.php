@@ -58,7 +58,7 @@ class PasswordExposedChecker
 
             // If we can't write to the our Certainty data directory, just
             // use the latest bundle from the Certainty package.
-            return (new Fetch())->getLatestBundle();
+            return (new Fetch($ourCertaintyDataDir))->getLatestBundle();
         } else {
             if (PHP_INT_SIZE === 4 && !extension_loaded('sodium')) {
 
