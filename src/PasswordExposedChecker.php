@@ -64,7 +64,7 @@ class PasswordExposedChecker
 
                 // If the platform would run verification checks slowly, use the
                 // latest bundle from the Certainty package and disable verification.
-                return (new Fetch())->getLatestBundle(false, false);
+                return (new Fetch($ourCertaintyDataDir))->getLatestBundle(false, false);
             } else {
 
                 // If the platform can run verification checks well enough, get
