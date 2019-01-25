@@ -38,7 +38,7 @@ class PasswordExposedChecker
     /** @var UriFactoryInterface */
     protected $uriFactory;
 
-    protected const CACHE_EXPIRY_SECONDS = 60 * 60 * 24 * 30;
+    protected const CACHE_EXPIRY_SECONDS = 2592000;
 
     /**
      * @param ClientInterface|null         $client
