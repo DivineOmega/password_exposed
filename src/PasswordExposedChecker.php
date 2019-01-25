@@ -3,48 +3,93 @@
 namespace DivineOmega\PasswordExposed;
 
 use DivineOmega\DOFileCachePSR6\CacheItemPool;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ConnectException;
+use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
+use Http\Discovery\Psr17FactoryDiscovery;
 use ParagonIE\Certainty\Bundle;
 use ParagonIE\Certainty\Fetch;
 use ParagonIE\Certainty\RemoteFetch;
+use Psr\Cache\CacheItemPoolInterface;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Client\NetworkExceptionInterface;
+use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\UriFactoryInterface;
 
 class PasswordExposedChecker
 {
-    /** @var Bundle $bundle */
-    private $bundle;
+    /** @var Bundle */
+    protected $bundle;
 
-    /** @var Client $client */
-    private $client;
+    /** @var ClientInterface */
+    protected $client;
 
-    /** @var CacheItemPool $cache */
-    private $cache;
+    /** @var CacheItemPoolInterface */
+    protected $cache;
+
+    /** @var RequestFactoryInterface */
+    protected $requestFactory;
+
+    /** @var UriFactoryInterface */
+    protected $uriFactory;
 
     const CACHE_EXPIRY_SECONDS = 60 * 60 * 24 * 30;
 
-    public function __construct(Client $client = null, CacheItemPool $cache = null, Bundle $bundle = null)
+    /**
+     * @param ClientInterface|null         $client
+     * @param CacheItemPoolInterface|null  $cache
+     * @param Bundle|null                  $bundle
+     * @param RequestFactoryInterface|null $requestFactory
+     * @param UriFactoryInterface|null     $uriFactory
+     */
+    public function __construct(
+        ClientInterface $client = null,
+        CacheItemPoolInterface $cache = null,
+        Bundle $bundle = null,
+        RequestFactoryInterface $requestFactory = null,
+        UriFactoryInterface $uriFactory = null
+    )
     {
-        if (!$client) {
-            $client = new Client([
-                'base_uri' => 'https://api.pwnedpasswords.com/',
-                'timeout'  => 3.0,
-            ]);
-        }
-        $this->client = $client;
+        $this->bundle = $bundle ?: $this->createBundle();
+        $this->client = $client ?: $this->createClient();
+        $this->cache = $cache ?: $this->createCache();
+        $this->requestFactory = $requestFactory ?: Psr17FactoryDiscovery::findRequestFactory();
+        $this->uriFactory = $uriFactory ?: Psr17FactoryDiscovery::findUrlFactory();
+    }
 
-        if (!$cache) {
-            $cache = new CacheItemPool();
-            $cache->changeConfig([
-                'cacheDirectory' => sys_get_temp_dir().'/password-exposed-cache/',
-            ]);
-        }
-        $this->cache = $cache;
+    /**
+     * @return Bundle
+     */
+    protected function createBundle()
+    {
+        return $this->getBundleFromCertainty();
+    }
 
-        if (!$bundle) {
-            $bundle = $this->getBundleFromCertainty();
-        }
-        $this->bundle = $bundle;
+    /**
+     * @return ClientInterface
+     */
+    protected function createClient()
+    {
+        return GuzzleAdapter::createWithConfig([
+            'timeout'    => 3.0,
+            'exceptions' => false,
+            'headers'    => [
+                'User_Agent' => 'password_exposed - https://github.com/DivineOmega/password_exposed',
+            ],
+            'verify'     => ($this->bundle->getFilePath()),
+        ]);
+    }
+
+    /**
+     * @return CacheItemPool
+     */
+    protected function createCache()
+    {
+        $cache = new CacheItemPool();
+        $cache->changeConfig([
+            'cacheDirectory' => sys_get_temp_dir() . '/password-exposed-cache/',
+        ]);
+
+        return $cache;
     }
 
     /**
@@ -52,7 +97,7 @@ class PasswordExposedChecker
      */
     private function getBundleFromCertainty()
     {
-        $ourCertaintyDataDir = __DIR__.'/../bundles/';
+        $ourCertaintyDataDir = __DIR__ . '/../bundles/';
 
         if (!is_writable($ourCertaintyDataDir)) {
 
@@ -91,7 +136,7 @@ class PasswordExposedChecker
      */
     public function passwordExposedByHash($hash)
     {
-        $cacheKey = substr($hash, 0, 2).'_'.substr($hash, 2, 3);
+        $cacheKey = substr($hash, 0, 2) . '_' . substr($hash, 2, 3);
 
         $cacheItem = $this->cache->getItem($cacheKey);
 
@@ -102,7 +147,7 @@ class PasswordExposedChecker
             try {
                 /** @var ResponseInterface $response */
                 $response = $this->makeRequest($hash);
-            } catch (ConnectException $e) {
+            } catch (NetworkExceptionInterface $e) {
                 return PasswordStatus::UNKNOWN;
             }
 
@@ -111,7 +156,7 @@ class PasswordExposedChecker
             }
 
             /** @var string $responseBody */
-            $responseBody = (string) $response->getBody();
+            $responseBody = $response->getBody()->getContents();
         }
 
         $cacheItem->set($responseBody);
@@ -124,19 +169,14 @@ class PasswordExposedChecker
     /**
      * @param string $hash
      *
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface
      */
     private function makeRequest($hash)
     {
-        $options = [
-            'exceptions' => false,
-            'headers'    => [
-                'User_Agent' => 'password_exposed - https://github.com/DivineOmega/password_exposed',
-            ],
-            'verify' => ($this->bundle->getFilePath()),
-        ];
+        $uri = $this->uriFactory->createUri('https://api.pwnedpasswords.com/range/' . substr($hash, 0, 5));
+        $request = $this->requestFactory->createRequest('GET', $uri);
 
-        return $this->client->request('GET', 'range/'.substr($hash, 0, 5), $options);
+        return $this->client->sendRequest($request);
     }
 
     /**
