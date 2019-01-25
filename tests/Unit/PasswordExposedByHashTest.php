@@ -17,6 +17,11 @@ class PasswordExposedByHashTest extends TestCase
         $this->checker = new PasswordExposedChecker();
     }
 
+    public function testFunctionExists()
+    {
+        $this->assertTrue(function_exists('password_exposed_by_hash'));
+    }
+
     /**
      * @return array
      */
@@ -37,12 +42,17 @@ class PasswordExposedByHashTest extends TestCase
     public function testExposedPasswords($hash)
     {
         $this->assertEquals($this->checker->passwordExposedByHash($hash), PasswordStatus::EXPOSED);
+        $this->assertEquals(password_exposed_by_hash($hash), PasswordStatus::EXPOSED);
     }
 
     public function testNotExposedPasswords()
     {
         $this->assertEquals(
             $this->checker->passwordExposedByHash($this->getPasswordHashUnlikelyToBeExposed()),
+            PasswordStatus::NOT_EXPOSED
+        );
+        $this->assertEquals(
+            password_exposed_by_hash($this->getPasswordHashUnlikelyToBeExposed()),
             PasswordStatus::NOT_EXPOSED
         );
     }
