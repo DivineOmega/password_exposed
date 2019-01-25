@@ -2,6 +2,11 @@
 
 namespace DivineOmega\PasswordExposed;
 
+/**
+ * Class PasswordStatus
+ *
+ * @package DivineOmega\PasswordExposed
+ */
 abstract class PasswordStatus
 {
     const NOT_EXPOSED = 'not_exposed';

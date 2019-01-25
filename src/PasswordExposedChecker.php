@@ -8,13 +8,19 @@ use Http\Discovery\Psr17FactoryDiscovery;
 use ParagonIE\Certainty\Bundle;
 use ParagonIE\Certainty\Fetch;
 use ParagonIE\Certainty\RemoteFetch;
+use Psr\Cache\CacheException;
 use Psr\Cache\CacheItemPoolInterface;
+use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
-use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriFactoryInterface;
 
+/**
+ * Class PasswordExposedChecker
+ *
+ * @package DivineOmega\PasswordExposed
+ */
 class PasswordExposedChecker
 {
     /** @var Bundle */
@@ -32,7 +38,7 @@ class PasswordExposedChecker
     /** @var UriFactoryInterface */
     protected $uriFactory;
 
-    const CACHE_EXPIRY_SECONDS = 60 * 60 * 24 * 30;
+    protected const CACHE_EXPIRY_SECONDS = 60 * 60 * 24 * 30;
 
     /**
      * @param ClientInterface|null         $client
@@ -42,16 +48,16 @@ class PasswordExposedChecker
      * @param UriFactoryInterface|null     $uriFactory
      */
     public function __construct(
-        ClientInterface $client = null,
-        CacheItemPoolInterface $cache = null,
-        Bundle $bundle = null,
-        RequestFactoryInterface $requestFactory = null,
-        UriFactoryInterface $uriFactory = null
+        ?ClientInterface $client = null,
+        ?CacheItemPoolInterface $cache = null,
+        ?Bundle $bundle = null,
+        ?RequestFactoryInterface $requestFactory = null,
+        ?UriFactoryInterface $uriFactory = null
     )
     {
-        $this->bundle = $bundle ?: $this->createBundle();
-        $this->client = $client ?: $this->createClient();
-        $this->cache = $cache ?: $this->createCache();
+        $this->client = $client;
+        $this->cache = $cache;
+        $this->bundle = $bundle;
         $this->requestFactory = $requestFactory ?: Psr17FactoryDiscovery::findRequestFactory();
         $this->uriFactory = $uriFactory ?: Psr17FactoryDiscovery::findUrlFactory();
     }
@@ -59,30 +65,63 @@ class PasswordExposedChecker
     /**
      * @return Bundle
      */
-    protected function createBundle()
+    protected function createBundle(): ?Bundle
     {
-        return $this->getBundleFromCertainty();
+        try {
+            return $this->getBundleFromCertainty();
+        } catch (\Exception $exception) {
+            return null;
+        }
+    }
+
+    /**
+     * @return Bundle
+     */
+    protected function getBundle(): ?Bundle
+    {
+        if ($this->bundle === null) {
+            $this->bundle = $this->createBundle();
+        }
+
+        return $this->bundle;
     }
 
     /**
      * @return ClientInterface
      */
-    protected function createClient()
+    protected function createClient(): ClientInterface
     {
-        return GuzzleAdapter::createWithConfig([
-            'timeout'    => 3.0,
-            'exceptions' => false,
-            'headers'    => [
+        $options = [
+            'timeout' => 3,
+            'headers' => [
                 'User_Agent' => 'password_exposed - https://github.com/DivineOmega/password_exposed',
             ],
-            'verify'     => ($this->bundle->getFilePath()),
-        ]);
+        ];
+
+        $bundle = $this->getBundle();
+        if ($bundle !== null) {
+            $options['verify'] = $bundle->getFilePath();
+        }
+
+        return GuzzleAdapter::createWithConfig($options);
+    }
+
+    /**
+     * @return ClientInterface
+     */
+    protected function getClient(): ClientInterface
+    {
+        if ($this->client === null) {
+            $this->client = $this->createClient();
+        }
+
+        return $this->client;
     }
 
     /**
      * @return CacheItemPool
      */
-    protected function createCache()
+    protected function createCache(): CacheItemPoolInterface
     {
         $cache = new CacheItemPool();
         $cache->changeConfig([
@@ -93,11 +132,25 @@ class PasswordExposedChecker
     }
 
     /**
-     * @return Bundle
+     * @return CacheItemPoolInterface
      */
-    private function getBundleFromCertainty()
+    protected function getCache(): CacheItemPoolInterface
     {
-        $ourCertaintyDataDir = __DIR__ . '/../bundles/';
+        if ($this->cache === null) {
+            $this->cache = $this->createCache();
+        }
+
+        return $this->cache;
+    }
+
+    /**
+     * @return Bundle
+     * @throws \ParagonIE\Certainty\Exception\CertaintyException
+     * @throws \SodiumException
+     */
+    private function getBundleFromCertainty(): Bundle
+    {
+        $ourCertaintyDataDir = __DIR__ . '/../bundles';
 
         if (!is_writable($ourCertaintyDataDir)) {
 
@@ -122,32 +175,38 @@ class PasswordExposedChecker
     /**
      * @param string $password
      *
-     * @return string (see PasswordStatus)
+     * @see PasswordStatus
+     * @return string
      */
-    public function passwordExposed($password)
+    public function passwordExposed($password): string
     {
-        return $this->passwordExposedByHash(sha1($password));
+        return $this->passwordExposedByHash($this->getHash($password));
     }
 
     /**
-     * @param string $hash Hexadecimal SHA-1 hash of the password
+     * @param $hash
      *
-     * @return string (see PasswordStatus)
+     * @see PasswordStatus
+     * @return string
      */
-    public function passwordExposedByHash($hash)
+    public function passwordExposedByHash($hash): string
     {
         $cacheKey = substr($hash, 0, 2) . '_' . substr($hash, 2, 3);
 
-        $cacheItem = $this->cache->getItem($cacheKey);
+        try {
+            $cacheItem = $this->getCache()->getItem($cacheKey);
+        } catch (CacheException $e) {
+            $cacheItem = null;
+        }
 
-        if ($cacheItem->isHit()) {
+        if ($cacheItem !== null && $cacheItem->isHit()) {
             /** @var string $responseBody */
             $responseBody = $cacheItem->get();
         } else {
             try {
                 /** @var ResponseInterface $response */
                 $response = $this->makeRequest($hash);
-            } catch (NetworkExceptionInterface $e) {
+            } catch (ClientExceptionInterface $e) {
                 return PasswordStatus::UNKNOWN;
             }
 
@@ -159,24 +218,69 @@ class PasswordExposedChecker
             $responseBody = $response->getBody()->getContents();
         }
 
-        $cacheItem->set($responseBody);
-        $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
-        $this->cache->save($cacheItem);
+        if ($cacheItem !== null) {
+            $cacheItem->set($responseBody);
+            $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
+            $this->getCache()->save($cacheItem);
+        }
 
         return $this->getPasswordStatus($hash, $responseBody);
     }
 
     /**
+     * @param string $password
+     *
+     * @return bool|null
+     */
+    public function isExposed(string $password): ?bool
+    {
+        return $this->isExposedByHash($this->getHash($password));
+    }
+
+    /**
      * @param string $hash
      *
-     * @return ResponseInterface
+     * @return bool|null
      */
-    private function makeRequest($hash)
+    public function isExposedByHash(string $hash): ?bool
+    {
+        $status = $this->passwordExposedByHash($hash);
+
+        switch ($status) {
+            case PasswordStatus::EXPOSED:
+                return true;
+                break;
+            case PasswordStatus::NOT_EXPOSED:
+                return false;
+                break;
+            case PasswordStatus::UNKNOWN:
+                return null;
+                break;
+        }
+    }
+
+    /**
+     * @param $hash
+     *
+     * @return ResponseInterface
+     * @throws \Psr\Http\Client\ClientExceptionInterface
+     */
+    private function makeRequest($hash): ResponseInterface
     {
         $uri = $this->uriFactory->createUri('https://api.pwnedpasswords.com/range/' . substr($hash, 0, 5));
         $request = $this->requestFactory->createRequest('GET', $uri);
 
-        return $this->client->sendRequest($request);
+        return $this->getClient()->sendRequest($request);
+    }
+
+    /**
+     * @param $string
+     *
+     * @return string
+     */
+    private function getHash(string $string): string
+    {
+        return sha1($string);
     }
 
     /**
@@ -185,7 +289,7 @@ class PasswordExposedChecker
      *
      * @return string
      */
-    private function getPasswordStatus($hash, $responseBody)
+    private function getPasswordStatus($hash, $responseBody): string
     {
         $hash = strtoupper($hash);
         $hashSuffix = substr($hash, 5);
@@ -193,7 +297,7 @@ class PasswordExposedChecker
         $lines = explode("\r\n", $responseBody);
 
         foreach ($lines as $line) {
-            list($exposedHashSuffix, $occurrences) = explode(':', $line);
+            [$exposedHashSuffix, $occurrences] = explode(':', $line);
             if (hash_equals($hashSuffix, $exposedHashSuffix)) {
                 return PasswordStatus::EXPOSED;
             }
