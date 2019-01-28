@@ -41,32 +41,26 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
             $cacheItem = null;
         }
 
+        $status = null;
+
+        // try to get status from cache
         if ($cacheItem !== null && $cacheItem->isHit()) {
-            /** @var string $responseBody */
-            $responseBody = $cacheItem->get();
-        } else {
-            try {
-                /** @var ResponseInterface $response */
-                $response = $this->makeRequest($hash);
-
-                if ($response->getStatusCode() !== 200) {
-                    return PasswordExposedCheckerInterface::UNKNOWN;
-                }
-            } catch (ClientExceptionInterface $e) {
-                return PasswordExposedCheckerInterface::UNKNOWN;
-            }
-
-            /** @var string $responseBody */
-            $responseBody = $response->getBody()->getContents();
-
-            if ($cacheItem !== null) {
-                $cacheItem->set($responseBody);
-                $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
-                $this->getCache()->save($cacheItem);
-            }
+            $status = $cacheItem->get();
         }
 
-        return $this->getPasswordStatus($hash, $responseBody);
+        // get status from api
+        if ($status === null || ($status !== PasswordStatus::NOT_EXPOSED && $status !== PasswordStatus::EXPOSED)) {
+            $status = $this->getStatus($hash);
+        }
+
+        // cache status
+        if ($cacheItem !== null) {
+            $cacheItem->set($status);
+            $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
+            $this->getCache()->save($cacheItem);
+        }
+
+        return $status;
     }
 
     /**
@@ -93,6 +87,30 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
         }
 
         return null;
+    }
+
+    /**
+     * @param string $hash
+     *
+     * @return string
+     */
+    protected function getStatus(string $hash): string
+    {
+        try {
+            /** @var ResponseInterface $response */
+            $response = $this->makeRequest($hash);
+
+            if ($response->getStatusCode() !== 200) {
+                return PasswordExposedCheckerInterface::UNKNOWN;
+            }
+        } catch (ClientExceptionInterface $e) {
+            return PasswordExposedCheckerInterface::UNKNOWN;
+        }
+
+        /** @var string $responseBody */
+        $responseBody = $response->getBody()->getContents();
+
+        return $this->getPasswordStatus($hash, $responseBody);
     }
 
     /**
