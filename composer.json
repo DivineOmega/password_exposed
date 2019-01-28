@@ -8,6 +8,17 @@
             "email": "jordan@hall05.co.uk"
         }
     ],
+    "require": {
+        "php": "^7.1",
+        "psr/http-client": "^1.0",
+        "psr/cache": "^1.0",
+        "psr/http-message": "^1.0",
+        "php-http/guzzle6-adapter": "^1.1|2.0",
+        "php-http/discovery": "^1.6",
+        "nyholm/psr7": "^1.0",
+        "paragonie/certainty": "^1|^2",
+        "divineomega/do-file-cache-psr-6": "^2.0"
+    },
     "require-dev": {
         "phpunit/phpunit": "^6.5",
         "fzaninotto/faker": "^1.7",
@@ -27,15 +38,5 @@
             "DivineOmega\\PasswordExposed\\Tests\\": "tests/"
         }
     },
-    "license": "LGPL-3.0-only",
-    "require": {
-        "php": "^7.1",
-        "psr/http-client": "^1.0",
-        "psr/http-message": "^1.0",
-        "php-http/guzzle6-adapter": "^1.1|2.0",
-        "php-http/discovery": "^1.6",
-        "nyholm/psr7": "^1.0",
-        "paragonie/certainty": "^1|^2",
-        "divineomega/do-file-cache-psr-6": "^2.0"
-    }
+    "license": "LGPL-3.0-only"
 }

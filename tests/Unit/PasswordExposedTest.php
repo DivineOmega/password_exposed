@@ -2,6 +2,7 @@
 
 namespace DivineOmega\PasswordExposed\Tests;
 
+use DivineOmega\DOFileCachePSR6\CacheItemPool;
 use DivineOmega\PasswordExposed\PasswordExposedChecker;
 use DivineOmega\PasswordExposed\PasswordStatus;
 use Faker\Factory;
@@ -14,7 +15,12 @@ class PasswordExposedTest extends TestCase
 
     protected function setUp()
     {
-        $this->checker = new PasswordExposedChecker();
+        $cache = new CacheItemPool();
+        $cache->changeConfig([
+            'cacheDirectory' => __DIR__ . '/../../cache/',
+            'gzipCompression' => false,
+        ]);
+        $this->checker = new PasswordExposedChecker(null, $cache);
     }
 
     public function testFunctionExists()
@@ -39,6 +45,7 @@ class PasswordExposedTest extends TestCase
         $this->assertEquals($this->checker->passwordExposed($password), PasswordStatus::EXPOSED);
         $this->assertEquals(password_exposed($password), PasswordStatus::EXPOSED);
         $this->assertEquals($this->checker->isExposed($password), true);
+        $this->assertEquals(password_is_exposed($password), true);
     }
 
     public function testNotExposedPasswords()
@@ -50,6 +57,10 @@ class PasswordExposedTest extends TestCase
         $this->assertEquals(password_exposed($this->getPasswordUnlikelyToBeExposed()), PasswordStatus::NOT_EXPOSED);
         $this->assertEquals(
             $this->checker->isExposed($this->getPasswordUnlikelyToBeExposed()),
+            false
+        );
+        $this->assertEquals(
+            password_is_exposed($this->getPasswordUnlikelyToBeExposed()),
             false
         );
     }

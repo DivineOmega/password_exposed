@@ -8,7 +8,6 @@ use Http\Discovery\Psr17FactoryDiscovery;
 use ParagonIE\Certainty\Bundle;
 use ParagonIE\Certainty\Fetch;
 use ParagonIE\Certainty\RemoteFetch;
-use Psr\Cache\CacheException;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
@@ -21,23 +20,25 @@ use Psr\Http\Message\UriFactoryInterface;
  *
  * @package DivineOmega\PasswordExposed
  */
-class PasswordExposedChecker
+class PasswordExposedChecker implements PasswordExposedCheckerInterface
 {
-    /** @var Bundle */
-    protected $bundle;
 
-    /** @var ClientInterface */
+    /** @var ClientInterface|null */
     protected $client;
 
-    /** @var CacheItemPoolInterface */
+    /** @var CacheItemPoolInterface|null */
     protected $cache;
 
-    /** @var RequestFactoryInterface */
+    /** @var Bundle|null */
+    protected $bundle;
+
+    /** @var RequestFactoryInterface|null */
     protected $requestFactory;
 
-    /** @var UriFactoryInterface */
+    /** @var UriFactoryInterface|null */
     protected $uriFactory;
 
+    /** @var int */
     protected const CACHE_EXPIRY_SECONDS = 2592000;
 
     /**
@@ -58,32 +59,109 @@ class PasswordExposedChecker
         $this->client = $client;
         $this->cache = $cache;
         $this->bundle = $bundle;
-        $this->requestFactory = $requestFactory ?: Psr17FactoryDiscovery::findRequestFactory();
-        $this->uriFactory = $uriFactory ?: Psr17FactoryDiscovery::findUrlFactory();
+        $this->requestFactory = $requestFactory;
+        $this->uriFactory = $uriFactory;
     }
 
     /**
-     * @return Bundle
+     * @inheritdoc
      */
-    protected function createBundle(): ?Bundle
+    public function passwordExposed(string $password): string
     {
+        return $this->passwordExposedByHash($this->getHash($password));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function passwordExposedByHash(string $hash): string
+    {
+        $cacheKey = substr($hash, 0, 2) . '_' . substr($hash, 2, 3);
+
         try {
-            return $this->getBundleFromCertainty();
-        } catch (\Exception $exception) {
-            return null;
+            $cacheItem = $this->getCache()->getItem($cacheKey);
+        } catch (\Exception $e) {
+            $cacheItem = null;
         }
+
+        if ($cacheItem !== null && $cacheItem->isHit()) {
+            /** @var string $responseBody */
+            $responseBody = $cacheItem->get();
+        } else {
+            try {
+                /** @var ResponseInterface $response */
+                $response = $this->makeRequest($hash);
+
+                if ($response->getStatusCode() !== 200) {
+                    return PasswordExposedCheckerInterface::UNKNOWN;
+                }
+            } catch (ClientExceptionInterface $e) {
+                return PasswordExposedCheckerInterface::UNKNOWN;
+            }
+
+            /** @var string $responseBody */
+            $responseBody = $response->getBody()->getContents();
+        }
+
+        if ($cacheItem !== null) {
+            $cacheItem->set($responseBody);
+            $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
+            $this->getCache()->save($cacheItem);
+        }
+
+        return $this->getPasswordStatus($hash, $responseBody);
     }
 
     /**
-     * @return Bundle
+     * @inheritdoc
      */
-    protected function getBundle(): ?Bundle
+    public function isExposed(string $password): ?bool
     {
-        if ($this->bundle === null) {
-            $this->bundle = $this->createBundle();
+        return $this->isExposedByHash($this->getHash($password));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isExposedByHash(string $hash): ?bool
+    {
+        $status = $this->passwordExposedByHash($hash);
+
+        if ($status === PasswordExposedCheckerInterface::EXPOSED) {
+            return true;
         }
 
-        return $this->bundle;
+        if ($status === PasswordExposedCheckerInterface::NOT_EXPOSED) {
+            return false;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param $hash
+     *
+     * @return ResponseInterface
+     * @throws \Psr\Http\Client\ClientExceptionInterface
+     */
+    protected function makeRequest(string $hash): ResponseInterface
+    {
+        $uri = $this->getUriFactory()->createUri('https://api.pwnedpasswords.com/range/' . substr($hash, 0, 5));
+        $request = $this->getRequestFactory()->createRequest('GET', $uri);
+
+        return $this->getClient()->sendRequest($request);
+    }
+
+    /**
+     * @return ClientInterface
+     */
+    protected function getClient(): ClientInterface
+    {
+        if ($this->client === null) {
+            $this->client = $this->createClient();
+        }
+
+        return $this->client;
     }
 
     /**
@@ -107,15 +185,15 @@ class PasswordExposedChecker
     }
 
     /**
-     * @return ClientInterface
+     * @return CacheItemPoolInterface
      */
-    protected function getClient(): ClientInterface
+    protected function getCache(): CacheItemPoolInterface
     {
-        if ($this->client === null) {
-            $this->client = $this->createClient();
+        if ($this->cache === null) {
+            $this->cache = $this->createCache();
         }
 
-        return $this->client;
+        return $this->cache;
     }
 
     /**
@@ -132,15 +210,67 @@ class PasswordExposedChecker
     }
 
     /**
-     * @return CacheItemPoolInterface
+     * @return RequestFactoryInterface
      */
-    protected function getCache(): CacheItemPoolInterface
+    protected function getRequestFactory(): RequestFactoryInterface
     {
-        if ($this->cache === null) {
-            $this->cache = $this->createCache();
+        if ($this->requestFactory === null) {
+            $this->requestFactory = $this->createRequestFactory();
         }
 
-        return $this->cache;
+        return $this->requestFactory;
+    }
+
+    /**
+     * @return RequestFactoryInterface
+     */
+    protected function createRequestFactory(): RequestFactoryInterface
+    {
+        return Psr17FactoryDiscovery::findRequestFactory();
+    }
+
+    /**
+     * @return UriFactoryInterface
+     */
+    protected function getUriFactory(): UriFactoryInterface
+    {
+        if ($this->uriFactory === null) {
+            $this->uriFactory = $this->createUriFactory();
+        }
+
+        return $this->uriFactory;
+    }
+
+    /**
+     * @return UriFactoryInterface
+     */
+    protected function createUriFactory(): UriFactoryInterface
+    {
+        return Psr17FactoryDiscovery::findUrlFactory();
+    }
+
+    /**
+     * @return Bundle
+     */
+    protected function getBundle(): ?Bundle
+    {
+        if ($this->bundle === null) {
+            $this->bundle = $this->createBundle();
+        }
+
+        return $this->bundle;
+    }
+
+    /**
+     * @return Bundle
+     */
+    protected function createBundle(): ?Bundle
+    {
+        try {
+            return $this->getBundleFromCertainty();
+        } catch (\Exception $exception) {
+            return null;
+        }
     }
 
     /**
@@ -148,7 +278,7 @@ class PasswordExposedChecker
      * @throws \ParagonIE\Certainty\Exception\CertaintyException
      * @throws \SodiumException
      */
-    private function getBundleFromCertainty(): Bundle
+    protected function getBundleFromCertainty(): Bundle
     {
         $ourCertaintyDataDir = __DIR__ . '/../bundles';
 
@@ -172,112 +302,11 @@ class PasswordExposedChecker
     }
 
     /**
-     * @param string $password
-     *
-     * @see PasswordStatus
-     * @return string
-     */
-    public function passwordExposed($password): string
-    {
-        return $this->passwordExposedByHash($this->getHash($password));
-    }
-
-    /**
-     * @param $hash
-     *
-     * @see PasswordStatus
-     * @return string
-     */
-    public function passwordExposedByHash($hash): string
-    {
-        $cacheKey = substr($hash, 0, 2) . '_' . substr($hash, 2, 3);
-
-        try {
-            $cacheItem = $this->getCache()->getItem($cacheKey);
-        } catch (CacheException $e) {
-            $cacheItem = null;
-        }
-
-        if ($cacheItem !== null && $cacheItem->isHit()) {
-            /** @var string $responseBody */
-            $responseBody = $cacheItem->get();
-        } else {
-            try {
-                /** @var ResponseInterface $response */
-                $response = $this->makeRequest($hash);
-            } catch (ClientExceptionInterface $e) {
-                return PasswordStatus::UNKNOWN;
-            }
-
-            if ($response->getStatusCode() !== 200) {
-                return PasswordStatus::UNKNOWN;
-            }
-
-            /** @var string $responseBody */
-            $responseBody = $response->getBody()->getContents();
-        }
-
-        if ($cacheItem !== null) {
-            $cacheItem->set($responseBody);
-            $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
-            $this->getCache()->save($cacheItem);
-        }
-
-        return $this->getPasswordStatus($hash, $responseBody);
-    }
-
-    /**
-     * @param string $password
-     *
-     * @return bool|null
-     */
-    public function isExposed(string $password): ?bool
-    {
-        return $this->isExposedByHash($this->getHash($password));
-    }
-
-    /**
-     * @param string $hash
-     *
-     * @return bool|null
-     */
-    public function isExposedByHash(string $hash): ?bool
-    {
-        $status = $this->passwordExposedByHash($hash);
-
-        switch ($status) {
-            case PasswordStatus::EXPOSED:
-                return true;
-                break;
-            case PasswordStatus::NOT_EXPOSED:
-                return false;
-                break;
-            case PasswordStatus::UNKNOWN:
-                return null;
-                break;
-        }
-    }
-
-    /**
-     * @param $hash
-     *
-     * @return ResponseInterface
-     * @throws \Psr\Http\Client\ClientExceptionInterface
-     */
-    private function makeRequest($hash): ResponseInterface
-    {
-        $uri = $this->uriFactory->createUri('https://api.pwnedpasswords.com/range/' . substr($hash, 0, 5));
-        $request = $this->requestFactory->createRequest('GET', $uri);
-
-        return $this->getClient()->sendRequest($request);
-    }
-
-    /**
      * @param $string
      *
      * @return string
      */
-    private function getHash(string $string): string
+    protected function getHash(string $string): string
     {
         return sha1($string);
     }
@@ -288,7 +317,7 @@ class PasswordExposedChecker
      *
      * @return string
      */
-    private function getPasswordStatus($hash, $responseBody): string
+    protected function getPasswordStatus($hash, $responseBody): string
     {
         $hash = strtoupper($hash);
         $hashSuffix = substr($hash, 5);

@@ -9,7 +9,7 @@ namespace DivineOmega\PasswordExposed;
  */
 abstract class PasswordStatus
 {
-    const NOT_EXPOSED = 'not_exposed';
-    const EXPOSED = 'exposed';
-    const UNKNOWN = 'unknown';
+    public const NOT_EXPOSED = PasswordExposedCheckerInterface::NOT_EXPOSED;
+    public const EXPOSED = PasswordExposedCheckerInterface::EXPOSED;
+    public const UNKNOWN = PasswordExposedCheckerInterface::UNKNOWN;
 }
