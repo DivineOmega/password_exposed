@@ -101,12 +101,12 @@ class PasswordExposedChecker implements PasswordExposedCheckerInterface
 
             /** @var string $responseBody */
             $responseBody = $response->getBody()->getContents();
-        }
 
-        if ($cacheItem !== null) {
-            $cacheItem->set($responseBody);
-            $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
-            $this->getCache()->save($cacheItem);
+            if ($cacheItem !== null) {
+                $cacheItem->set($responseBody);
+                $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
+                $this->getCache()->save($cacheItem);
+            }
         }
 
         return $this->getPasswordStatus($hash, $responseBody);
