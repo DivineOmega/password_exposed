@@ -38,5 +38,10 @@
             "DivineOmega\\PasswordExposed\\Tests\\": "tests/"
         }
     },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "3.0-dev"
+        }
+    },
     "license": "LGPL-3.0-only"
 }
