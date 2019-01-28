@@ -2,6 +2,7 @@
 
 namespace DivineOmega\PasswordExposed\Tests;
 
+use DivineOmega\DOFileCachePSR6\CacheItemPool;
 use DivineOmega\PasswordExposed\PasswordExposedChecker;
 use DivineOmega\PasswordExposed\PasswordStatus;
 use ParagonIE\Certainty\Bundle;
@@ -14,7 +15,13 @@ class BundleInjectionTest extends TestCase
         $pemFiles = glob(__DIR__.'/../../vendor/paragonie/certainty/data/*.pem');
         $bundle = new Bundle(end($pemFiles));
 
-        $passwordExposedChecker = new PasswordExposedChecker(null, null, $bundle);
+        $cache = new CacheItemPool();
+        $cache->changeConfig([
+            'cacheDirectory' => __DIR__ . '/../../cache/',
+            'gzipCompression' => false,
+        ]);
+
+        $passwordExposedChecker = new PasswordExposedChecker(null, $cache, $bundle);
 
         $this->assertEquals(PasswordStatus::EXPOSED, $passwordExposedChecker->passwordExposed('hunter2'));
     }
