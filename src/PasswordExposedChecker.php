@@ -19,7 +19,7 @@ class PasswordExposedChecker
     /** @var Client $client */
     private $client;
 
-    /** @var CacheItemPool $cache */
+    /** @var CacheItemPoolInterface $cache */
     private $cache;
 
     const CACHE_EXPIRY_SECONDS = 60 * 60 * 24 * 30;
