@@ -134,11 +134,11 @@ class PasswordExposedChecker
 
             /** @var string $responseBody */
             $responseBody = (string) $response->getBody();
-        }
 
-        $cacheItem->set($responseBody);
-        $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
-        $this->cache->save($cacheItem);
+            $cacheItem->set($responseBody);
+            $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
+            $this->cache->save($cacheItem);
+        }
 
         return $this->getPasswordStatus($hash, $responseBody);
     }
