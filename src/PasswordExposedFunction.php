@@ -25,7 +25,7 @@ function password_exposed_by_hash($hash): string
 /**
  * @param string $password
  *
- * @return boolean|null
+ * @return bool|null
  */
 function password_is_exposed($password): ?bool
 {
@@ -35,7 +35,7 @@ function password_is_exposed($password): ?bool
 /**
  * @param string $hash
  *
- * @return boolean|null
+ * @return bool|null
  */
 function password_is_exposed_by_hash($hash): ?bool
 {

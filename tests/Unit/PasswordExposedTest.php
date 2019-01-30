@@ -17,7 +17,7 @@ class PasswordExposedTest extends TestCase
     {
         $cache = new CacheItemPool();
         $cache->changeConfig([
-            'cacheDirectory' => __DIR__ . '/../../cache/',
+            'cacheDirectory' => __DIR__.'/../../cache/',
             'gzipCompression' => false,
         ]);
         $this->checker = new PasswordExposedChecker(null, $cache);

@@ -4,8 +4,6 @@ namespace DivineOmega\PasswordExposed;
 
 /**
  * Class PasswordStatus
- *
- * @package DivineOmega\PasswordExposed
  */
 abstract class PasswordStatus
 {

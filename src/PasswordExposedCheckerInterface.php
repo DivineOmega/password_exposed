@@ -4,8 +4,6 @@ namespace DivineOmega\PasswordExposed;
 
 /**
  * Interface PasswordExposedCheckerInterface
- *
- * @package DivineOmega\PasswordExposed
  */
 interface PasswordExposedCheckerInterface
 {
@@ -18,6 +16,7 @@ interface PasswordExposedCheckerInterface
      * @param string $password
      *
      * @see PasswordStatus
+     *
      * @return string
      */
     public function passwordExposed(string $password): string;
@@ -26,6 +25,7 @@ interface PasswordExposedCheckerInterface
      * @param $hash
      *
      * @see PasswordStatus
+     *
      * @return string
      */
     public function passwordExposedByHash(string $hash): string;

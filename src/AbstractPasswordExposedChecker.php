@@ -11,8 +11,6 @@ use Psr\Http\Message\UriFactoryInterface;
 
 /**
  * Class AbstractPasswordExposedChecker
- *
- * @package DivineOmega\PasswordExposed
  */
 abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerInterface
 {
@@ -21,7 +19,7 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
     protected const CACHE_EXPIRY_SECONDS = 2592000;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function passwordExposed(string $password): string
     {
@@ -29,11 +27,11 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function passwordExposedByHash(string $hash): string
     {
-        $cacheKey = substr($hash, 0, 2) . '_' . substr($hash, 2, 3);
+        $cacheKey = substr($hash, 0, 2).'_'.substr($hash, 2, 3);
 
         try {
             $cacheItem = $this->getCache()->getItem($cacheKey);
@@ -64,7 +62,7 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function isExposed(string $password): ?bool
     {
@@ -72,7 +70,7 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function isExposedByHash(string $hash): ?bool
     {
@@ -121,7 +119,7 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
      */
     protected function makeRequest(string $hash): ResponseInterface
     {
-        $uri = $this->getUriFactory()->createUri('https://api.pwnedpasswords.com/range/' . substr($hash, 0, 5));
+        $uri = $this->getUriFactory()->createUri('https://api.pwnedpasswords.com/range/'.substr($hash, 0, 5));
         $request = $this->getRequestFactory()->createRequest('GET', $uri);
 
         return $this->getClient()->sendRequest($request);

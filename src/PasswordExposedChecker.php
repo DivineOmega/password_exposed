@@ -15,8 +15,6 @@ use Psr\Http\Message\UriFactoryInterface;
 
 /**
  * Class PasswordExposedChecker
- *
- * @package DivineOmega\PasswordExposed
  */
 class PasswordExposedChecker extends AbstractPasswordExposedChecker
 {
@@ -49,8 +47,7 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
         ?Bundle $bundle = null,
         ?RequestFactoryInterface $requestFactory = null,
         ?UriFactoryInterface $uriFactory = null
-    )
-    {
+    ) {
         $this->client = $client;
         $this->cache = $cache;
         $this->bundle = $bundle;
@@ -109,7 +106,7 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
     {
         $cache = new CacheItemPool();
         $cache->changeConfig([
-            'cacheDirectory' => sys_get_temp_dir() . '/password-exposed-cache/',
+            'cacheDirectory' => sys_get_temp_dir().'/password-exposed-cache/',
         ]);
 
         return $cache;
@@ -180,13 +177,14 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
     }
 
     /**
-     * @return Bundle
      * @throws \ParagonIE\Certainty\Exception\CertaintyException
      * @throws \SodiumException
+     *
+     * @return Bundle
      */
     protected function getBundleFromCertainty(): Bundle
     {
-        $ourCertaintyDataDir = __DIR__ . '/../bundles';
+        $ourCertaintyDataDir = __DIR__.'/../bundles';
 
         if (!is_writable($ourCertaintyDataDir)) {
 
