@@ -8,6 +8,7 @@ use GuzzleHttp\Exception\ConnectException;
 use ParagonIE\Certainty\Bundle;
 use ParagonIE\Certainty\Fetch;
 use ParagonIE\Certainty\RemoteFetch;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class PasswordExposedChecker
@@ -23,7 +24,16 @@ class PasswordExposedChecker
 
     const CACHE_EXPIRY_SECONDS = 60 * 60 * 24 * 30;
 
-    public function __construct(Client $client = null, CacheItemPool $cache = null, Bundle $bundle = null)
+    /**
+     * PasswordExposedChecker constructor.
+     *
+     * @param Client|null $client
+     * @param CacheItemPoolInterface|null $cache
+     * @param Bundle|null $bundle
+     * @throws \ParagonIE\Certainty\Exception\CertaintyException
+     * @throws \SodiumException
+     */
+    public function __construct(Client $client = null, CacheItemPoolInterface $cache = null, Bundle $bundle = null)
     {
         if (!$client) {
             $client = new Client([
@@ -48,7 +58,11 @@ class PasswordExposedChecker
     }
 
     /**
+     * Get secure bundle from Certainty.
+     *
      * @return Bundle
+     * @throws \ParagonIE\Certainty\Exception\CertaintyException
+     * @throws \SodiumException
      */
     private function getBundleFromCertainty()
     {
@@ -75,9 +89,13 @@ class PasswordExposedChecker
     }
 
     /**
+     * Check if password has been exposed.
+     *
      * @param string $password
      *
      * @return string (see PasswordStatus)
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function passwordExposed($password)
     {
@@ -85,9 +103,13 @@ class PasswordExposedChecker
     }
 
     /**
+     * Check if password has been exposed (using SHA1 hash).
+     *
      * @param string $hash Hexadecimal SHA-1 hash of the password
      *
      * @return string (see PasswordStatus)
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function passwordExposedByHash($hash)
     {
@@ -122,9 +144,12 @@ class PasswordExposedChecker
     }
 
     /**
+     * Perform request to HIBP Passwords API.
+     *
      * @param string $hash
      *
      * @return \Psr\Http\Message\ResponseInterface
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     private function makeRequest($hash)
     {
@@ -140,10 +165,12 @@ class PasswordExposedChecker
     }
 
     /**
+     * Convert response body to PasswordStatus constant.
+     *
      * @param string $hash
      * @param string $responseBody
      *
-     * @return string
+     * @return string (see PasswordStatus)
      */
     private function getPasswordStatus($hash, $responseBody)
     {

@@ -32,6 +32,7 @@
         "php": ">=5.6",
         "guzzlehttp/guzzle": "^6.3",
         "paragonie/certainty": "^1|^2",
-        "divineomega/do-file-cache-psr-6": "^2.0"
+        "divineomega/do-file-cache-psr-6": "^2.0",
+        "psr/cache": "^1.0"
     }
 }
