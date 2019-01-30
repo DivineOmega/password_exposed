@@ -27,9 +27,10 @@ class PasswordExposedChecker
     /**
      * PasswordExposedChecker constructor.
      *
-     * @param Client|null $client
+     * @param Client|null                 $client
      * @param CacheItemPoolInterface|null $cache
-     * @param Bundle|null $bundle
+     * @param Bundle|null                 $bundle
+     *
      * @throws \ParagonIE\Certainty\Exception\CertaintyException
      * @throws \SodiumException
      */
@@ -60,9 +61,10 @@ class PasswordExposedChecker
     /**
      * Get secure bundle from Certainty.
      *
-     * @return Bundle
      * @throws \ParagonIE\Certainty\Exception\CertaintyException
      * @throws \SodiumException
+     *
+     * @return Bundle
      */
     private function getBundleFromCertainty()
     {
@@ -93,9 +95,10 @@ class PasswordExposedChecker
      *
      * @param string $password
      *
-     * @return string (see PasswordStatus)
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Psr\Cache\InvalidArgumentException
+     *
+     * @return string (see PasswordStatus)
      */
     public function passwordExposed($password)
     {
@@ -107,9 +110,10 @@ class PasswordExposedChecker
      *
      * @param string $hash Hexadecimal SHA-1 hash of the password
      *
-     * @return string (see PasswordStatus)
      * @throws \GuzzleHttp\Exception\GuzzleException
      * @throws \Psr\Cache\InvalidArgumentException
+     *
+     * @return string (see PasswordStatus)
      */
     public function passwordExposedByHash($hash)
     {
@@ -148,8 +152,9 @@ class PasswordExposedChecker
      *
      * @param string $hash
      *
-     * @return \Psr\Http\Message\ResponseInterface
      * @throws \GuzzleHttp\Exception\GuzzleException
+     *
+     * @return \Psr\Http\Message\ResponseInterface
      */
     private function makeRequest($hash)
     {
