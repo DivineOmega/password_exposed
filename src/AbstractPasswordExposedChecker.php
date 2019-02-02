@@ -49,13 +49,13 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
         // get status from api
         if ($status === null || ($status !== PasswordStatus::NOT_EXPOSED && $status !== PasswordStatus::EXPOSED)) {
             $status = $this->getStatus($hash);
-        }
 
-        // cache status
-        if ($cacheItem !== null) {
-            $cacheItem->set($status);
-            $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
-            $this->getCache()->save($cacheItem);
+            // cache status
+            if ($cacheItem !== null) {
+                $cacheItem->set($status);
+                $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
+                $this->getCache()->save($cacheItem);
+            }
         }
 
         return $status;
