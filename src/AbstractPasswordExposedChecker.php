@@ -31,7 +31,7 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
      */
     public function passwordExposedByHash(string $hash): string
     {
-        $cacheKey = substr($hash, 0, 2).'_'.substr($hash, 2, 3);
+        $cacheKey = 'pec_'.hash('sha1', $hash);
 
         try {
             $cacheItem = $this->getCache()->getItem($cacheKey);
