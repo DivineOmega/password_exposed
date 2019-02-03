@@ -31,7 +31,7 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
      */
     public function passwordExposedByHash(string $hash): string
     {
-        $cacheKey = 'pec_'.hash('sha1', $hash);
+        $cacheKey = 'pec_' . hash('sha1', $hash);
 
         try {
             $cacheItem = $this->getCache()->getItem($cacheKey);
@@ -39,26 +39,37 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
             $cacheItem = null;
         }
 
-        $status = null;
+        $body = null;
 
         // try to get status from cache
         if ($cacheItem !== null && $cacheItem->isHit()) {
-            $status = $cacheItem->get();
+            $body = $cacheItem->get();
         }
 
         // get status from api
-        if ($status === null || ($status !== PasswordStatus::NOT_EXPOSED && $status !== PasswordStatus::EXPOSED)) {
-            $status = $this->getStatus($hash);
+        if ($body === null) {
+            try {
+                /** @var ResponseInterface $response */
+                $response = $this->makeRequest($hash);
 
-            // cache status
-            if ($cacheItem !== null) {
-                $cacheItem->set($status);
-                $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
-                $this->getCache()->save($cacheItem);
+                /** @var string $responseBody */
+                $body = $response->getBody()->getContents();
+
+                // cache status
+                if ($cacheItem !== null) {
+                    $cacheItem->set($body);
+                    $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
+                    $this->getCache()->save($cacheItem);
+                }
+            } catch (ClientExceptionInterface $e) {
             }
         }
 
-        return $status;
+        if ($body === null) {
+            return PasswordExposedCheckerInterface::UNKNOWN;
+        }
+
+        return $this->getPasswordStatus($hash, $body);
     }
 
     /**
@@ -119,7 +130,7 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
      */
     protected function makeRequest(string $hash): ResponseInterface
     {
-        $uri = $this->getUriFactory()->createUri('https://api.pwnedpasswords.com/range/'.substr($hash, 0, 5));
+        $uri = $this->getUriFactory()->createUri('https://api.pwnedpasswords.com/range/' . substr($hash, 0, 5));
         $request = $this->getRequestFactory()->createRequest('GET', $uri);
 
         return $this->getClient()->sendRequest($request);
