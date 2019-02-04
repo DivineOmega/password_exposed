@@ -2,10 +2,21 @@
     "name": "divineomega/password_exposed",
     "description": "This PHP package provides a `password_exposed` helper function, that uses the haveibeenpwned.com API to check if a password has been exposed in a data breach.",
     "type": "library",
+    "license": "LGPL-3.0-only",
+    "homepage": "https://github.com/DivineOmega/password_exposed",
+    "support": {
+        "issues": "https://github.com/DivineOmega/password_exposed/issues",
+        "source": "https://github.com/DivineOmega/password_exposed/releases",
+        "wiki": "https://github.com/DivineOmega/password_exposed/wiki"
+    },
     "authors": [
         {
             "name": "Jordan Hall",
             "email": "jordan@hall05.co.uk"
+        },
+        {
+            "name": "Contributors",
+            "homepage": "https://github.com/DivineOmega/password_exposed/graphs/contributors"
         }
     ],
     "require": {
@@ -47,7 +58,6 @@
             "dev-master": "3.0-dev"
         }
     },
-    "license": "LGPL-3.0-only",
     "minimum-stability": "dev",
     "prefer-stable": true
 }
