@@ -14,7 +14,6 @@ use Psr\Http\Message\UriFactoryInterface;
  */
 abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerInterface
 {
-
     /** @var int */
     protected const CACHE_EXPIRY_SECONDS = 2592000;
 
