@@ -25,6 +25,8 @@
         "phpunit/phpunit": "^6.5",
         "fzaninotto/faker": "^1.7",
         "vimeo/psalm": "^1",
+        "kriswallsmith/buzz": "^1.0",
+        "symfony/cache": "^3.4|^4.0",
         "php-coveralls/php-coveralls": "^2.1"
     },
     "autoload": {
@@ -45,5 +47,7 @@
             "dev-master": "3.0-dev"
         }
     },
-    "license": "LGPL-3.0-only"
+    "license": "LGPL-3.0-only",
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

@@ -18,7 +18,7 @@ class PasswordExposedTest extends TestCase
         $cache = new CacheItemPool();
         $cache->changeConfig(
             [
-                'cacheDirectory'  => __DIR__.'/../../cache/',
+                'cacheDirectory'  => __DIR__.'/../../cache/dofilecache/',
                 'gzipCompression' => false,
             ]
         );
