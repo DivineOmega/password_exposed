@@ -3,11 +3,10 @@
 namespace DivineOmega\PasswordExposed;
 
 /**
- * Interface PasswordExposedCheckerInterface
+ * Interface PasswordExposedCheckerInterface.
  */
 interface PasswordExposedCheckerInterface
 {
-
     public const NOT_EXPOSED = 'not_exposed';
     public const EXPOSED = 'exposed';
     public const UNKNOWN = 'unknown';

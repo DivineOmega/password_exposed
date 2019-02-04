@@ -16,12 +16,15 @@ class BundleInjectionTest extends TestCase
         $bundle = new Bundle(end($pemFiles));
 
         $cache = new CacheItemPool();
-        $cache->changeConfig([
-            'cacheDirectory' => __DIR__.'/../../cache/',
-            'gzipCompression' => false,
-        ]);
+        $cache->changeConfig(
+            [
+                'cacheDirectory'  => __DIR__.'/../../cache/',
+                'gzipCompression' => false,
+            ]
+        );
 
-        $passwordExposedChecker = new PasswordExposedChecker(null, $cache, $bundle);
+        $passwordExposedChecker = new PasswordExposedChecker(null, $cache);
+        $passwordExposedChecker->setBundle($bundle);
 
         $this->assertEquals(PasswordStatus::EXPOSED, $passwordExposedChecker->passwordExposed('hunter2'));
     }

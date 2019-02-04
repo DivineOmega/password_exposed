@@ -14,11 +14,10 @@ use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 
 /**
- * Class PasswordExposedChecker
+ * Class PasswordExposedChecker.
  */
 class PasswordExposedChecker extends AbstractPasswordExposedChecker
 {
-
     /** @var ClientInterface|null */
     protected $client;
 
@@ -50,8 +49,7 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
         ?int $cacheLifeTime = null,
         ?RequestFactoryInterface $requestFactory = null,
         ?UriFactoryInterface $uriFactory = null
-    )
-    {
+    ) {
         $this->client = $client;
         $this->cache = $cache;
         $this->cacheLifeTime = $cacheLifeTime;
@@ -60,7 +58,7 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
     }
 
     /**
-     * @return ClientInterface
+     * {@inheritdoc}
      */
     protected function getClient(): ClientInterface
     {
@@ -92,7 +90,7 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
     }
 
     /**
-     * @return CacheItemPoolInterface
+     * {@inheritdoc}
      */
     protected function getCache(): CacheItemPoolInterface
     {
@@ -151,7 +149,7 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
     }
 
     /**
-     * @return UriFactoryInterface
+     * {@inheritdoc}
      */
     protected function getUriFactory(): UriFactoryInterface
     {
@@ -210,7 +208,7 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
      */
     protected function getBundleFromCertainty(): Bundle
     {
-        $ourCertaintyDataDir = __DIR__ . '/../bundles';
+        $ourCertaintyDataDir = __DIR__.'/../bundles';
 
         if (!is_writable($ourCertaintyDataDir)) {
 

@@ -3,7 +3,7 @@
 namespace DivineOmega\PasswordExposed;
 
 /**
- * Class PasswordStatus
+ * Class PasswordStatus.
  */
 abstract class PasswordStatus
 {

@@ -3,7 +3,6 @@
 namespace DivineOmega\PasswordExposed;
 
 use Psr\Cache\CacheItemPoolInterface;
-use Psr\Cache\InvalidArgumentException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
@@ -11,7 +10,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriFactoryInterface;
 
 /**
- * Class AbstractPasswordExposedChecker
+ * Class AbstractPasswordExposedChecker.
  */
 abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerInterface
 {
@@ -33,7 +32,7 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
     public function passwordExposedByHash(string $hash): string
     {
         $cache = $this->getCache();
-        $cacheKey = substr($hash, 0, 2) . '_' . substr($hash, 2, 3);
+        $cacheKey = substr($hash, 0, 2).'_'.substr($hash, 2, 3);
         $body = null;
 
         try {
@@ -43,7 +42,7 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
             if ($cacheItem->isHit()) {
                 $body = $cacheItem->get();
             }
-        } catch (InvalidArgumentException $e) {
+        } catch (\Exception $e) {
             $cacheItem = null;
         }
 
@@ -108,12 +107,13 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
     /**
      * @param $hash
      *
-     * @return ResponseInterface
      * @throws \Psr\Http\Client\ClientExceptionInterface
+     *
+     * @return ResponseInterface
      */
     protected function makeRequest(string $hash): ResponseInterface
     {
-        $uri = $this->getUriFactory()->createUri('https://api.pwnedpasswords.com/range/' . substr($hash, 0, 5));
+        $uri = $this->getUriFactory()->createUri('https://api.pwnedpasswords.com/range/'.substr($hash, 0, 5));
         $request = $this->getRequestFactory()->createRequest('GET', $uri);
 
         return $this->getClient()->sendRequest($request);

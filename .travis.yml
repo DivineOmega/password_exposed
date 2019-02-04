@@ -7,11 +7,11 @@ php:
   - 'hhvm'
 matrix:
   allow_failures:
-    - php: nightly
+    -   php: nightly
 install:
   - composer install
 script:
- - ./vendor/bin/phpunit --coverage-clover ./tests/Logs/clover.xml
- - ./vendor/bin/psalm
+  - ./vendor/bin/phpunit --coverage-clover ./tests/Logs/clover.xml
+  - ./vendor/bin/psalm
 after_script:
- - php vendor/bin/php-coveralls -v
+  - php vendor/bin/php-coveralls -v

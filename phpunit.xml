@@ -23,6 +23,6 @@
         </whitelist>
     </filter>
     <php>
-        
+
     </php>
 </phpunit>

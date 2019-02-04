@@ -16,10 +16,12 @@ class PasswordExposedTest extends TestCase
     protected function setUp()
     {
         $cache = new CacheItemPool();
-        $cache->changeConfig([
-            'cacheDirectory' => __DIR__.'/../../cache/',
-            'gzipCompression' => false,
-        ]);
+        $cache->changeConfig(
+            [
+                'cacheDirectory'  => __DIR__.'/../../cache/',
+                'gzipCompression' => false,
+            ]
+        );
         $this->checker = new PasswordExposedChecker(null, $cache);
     }
 
