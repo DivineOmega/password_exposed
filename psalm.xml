@@ -3,6 +3,6 @@
     totallyTyped="false"
 >
     <projectFiles>
-        <directory name="src" />
+        <directory name="src"/>
     </projectFiles>
 </psalm>

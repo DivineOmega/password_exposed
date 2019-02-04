@@ -1,5 +1,7 @@
-composer.lock
-vendor
+/composer.lock
+/vendor/
+/cache/
+/tests/Logs
 bundles/*
 !bundles/.
 

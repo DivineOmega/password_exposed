@@ -3,162 +3,229 @@
 namespace DivineOmega\PasswordExposed;
 
 use DivineOmega\DOFileCachePSR6\CacheItemPool;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ConnectException;
+use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
+use Http\Discovery\Psr17FactoryDiscovery;
 use ParagonIE\Certainty\Bundle;
 use ParagonIE\Certainty\Fetch;
 use ParagonIE\Certainty\RemoteFetch;
-use Psr\Http\Message\ResponseInterface;
+use Psr\Cache\CacheItemPoolInterface;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\UriFactoryInterface;
 
-class PasswordExposedChecker
+/**
+ * Class PasswordExposedChecker.
+ */
+class PasswordExposedChecker extends AbstractPasswordExposedChecker
 {
-    /** @var Bundle $bundle */
-    private $bundle;
+    /** @var ClientInterface|null */
+    protected $client;
 
-    /** @var Client $client */
-    private $client;
+    /** @var CacheItemPoolInterface|null */
+    protected $cache;
 
-    /** @var CacheItemPool $cache */
-    private $cache;
+    /** @var Bundle|null */
+    protected $bundle;
 
-    const CACHE_EXPIRY_SECONDS = 60 * 60 * 24 * 30;
+    /** @var int|null */
+    protected $cacheLifeTime;
 
-    public function __construct(Client $client = null, CacheItemPool $cache = null, Bundle $bundle = null)
-    {
-        if (!$client) {
-            $client = new Client([
-                'base_uri' => 'https://api.pwnedpasswords.com/',
-                'timeout'  => 3.0,
-            ]);
-        }
+    /** @var RequestFactoryInterface|null */
+    protected $requestFactory;
+
+    /** @var UriFactoryInterface|null */
+    protected $uriFactory;
+
+    /**
+     * @param ClientInterface|null         $client
+     * @param CacheItemPoolInterface|null  $cache
+     * @param int|null                     $cacheLifeTime
+     * @param RequestFactoryInterface|null $requestFactory
+     * @param UriFactoryInterface|null     $uriFactory
+     */
+    public function __construct(
+        ?ClientInterface $client = null,
+        ?CacheItemPoolInterface $cache = null,
+        ?int $cacheLifeTime = null,
+        ?RequestFactoryInterface $requestFactory = null,
+        ?UriFactoryInterface $uriFactory = null
+    ) {
         $this->client = $client;
-
-        if (!$cache) {
-            $cache = new CacheItemPool();
-            $cache->changeConfig([
-                'cacheDirectory' => sys_get_temp_dir().'/password-exposed-cache/',
-            ]);
-        }
         $this->cache = $cache;
+        $this->cacheLifeTime = $cacheLifeTime;
+        $this->requestFactory = $requestFactory;
+        $this->uriFactory = $uriFactory;
+    }
 
-        if (!$bundle) {
-            $bundle = $this->getBundleFromCertainty();
+    /**
+     * {@inheritdoc}
+     */
+    protected function getClient(): ClientInterface
+    {
+        if ($this->client === null) {
+            $this->client = $this->createClient();
         }
+
+        return $this->client;
+    }
+
+    /**
+     * @return ClientInterface
+     */
+    protected function createClient(): ClientInterface
+    {
+        $options = [
+            'timeout' => 3,
+            'headers' => [
+                'User_Agent' => 'password_exposed - https://github.com/DivineOmega/password_exposed',
+            ],
+        ];
+
+        $bundle = $this->getBundle();
+        if ($bundle !== null) {
+            $options['verify'] = $bundle->getFilePath();
+        }
+
+        return GuzzleAdapter::createWithConfig($options);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getCache(): CacheItemPoolInterface
+    {
+        if ($this->cache === null) {
+            $this->cache = $this->createCache();
+        }
+
+        return $this->cache;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getCacheLifeTime(): int
+    {
+        if ($this->cacheLifeTime === null) {
+            return self::CACHE_EXPIRY_SECONDS;
+        }
+
+        return $this->cacheLifeTime;
+    }
+
+    /**
+     * @return CacheItemPool
+     */
+    protected function createCache(): CacheItemPoolInterface
+    {
+        $cache = new CacheItemPool();
+        $cache->changeConfig(
+            [
+                'cacheDirectory' => sys_get_temp_dir().'/password-exposed-cache/',
+            ]
+        );
+
+        return $cache;
+    }
+
+    /**
+     * @return RequestFactoryInterface
+     */
+    protected function getRequestFactory(): RequestFactoryInterface
+    {
+        if ($this->requestFactory === null) {
+            $this->requestFactory = $this->createRequestFactory();
+        }
+
+        return $this->requestFactory;
+    }
+
+    /**
+     * @return RequestFactoryInterface
+     */
+    protected function createRequestFactory(): RequestFactoryInterface
+    {
+        return Psr17FactoryDiscovery::findRequestFactory();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getUriFactory(): UriFactoryInterface
+    {
+        if ($this->uriFactory === null) {
+            $this->uriFactory = $this->createUriFactory();
+        }
+
+        return $this->uriFactory;
+    }
+
+    /**
+     * @return UriFactoryInterface
+     */
+    protected function createUriFactory(): UriFactoryInterface
+    {
+        return Psr17FactoryDiscovery::findUrlFactory();
+    }
+
+    /**
+     * @return Bundle
+     */
+    protected function getBundle(): ?Bundle
+    {
+        if ($this->bundle === null) {
+            $this->bundle = $this->createBundle();
+        }
+
+        return $this->bundle;
+    }
+
+    /**
+     * @param Bundle $bundle
+     */
+    public function setBundle(Bundle $bundle): void
+    {
         $this->bundle = $bundle;
     }
 
     /**
      * @return Bundle
      */
-    private function getBundleFromCertainty()
+    protected function createBundle(): ?Bundle
     {
-        $ourCertaintyDataDir = __DIR__.'/../bundles/';
+        try {
+            return $this->getBundleFromCertainty();
+        } catch (\Exception $exception) {
+            return null;
+        }
+    }
+
+    /**
+     * @throws \ParagonIE\Certainty\Exception\CertaintyException
+     * @throws \SodiumException
+     *
+     * @return Bundle
+     */
+    protected function getBundleFromCertainty(): Bundle
+    {
+        $ourCertaintyDataDir = __DIR__.'/../bundles';
 
         if (!is_writable($ourCertaintyDataDir)) {
 
             // If we can't write to the our Certainty data directory, just
             // use the latest bundle from the Certainty package.
             return (new Fetch($ourCertaintyDataDir))->getLatestBundle();
-        } else {
-            if (PHP_INT_SIZE === 4 && !extension_loaded('sodium')) {
-
-                // If the platform would run verification checks slowly, use the
-                // latest bundle from the Certainty package and disable verification.
-                return (new Fetch($ourCertaintyDataDir))->getLatestBundle(false, false);
-            } else {
-
-                // If the platform can run verification checks well enough, get
-                // latest remote bundle and verify it.
-                return (new RemoteFetch($ourCertaintyDataDir))->getLatestBundle();
-            }
-        }
-    }
-
-    /**
-     * @param string $password
-     *
-     * @return string (see PasswordStatus)
-     */
-    public function passwordExposed($password)
-    {
-        return $this->passwordExposedByHash(sha1($password));
-    }
-
-    /**
-     * @param string $hash Hexadecimal SHA-1 hash of the password
-     *
-     * @return string (see PasswordStatus)
-     */
-    public function passwordExposedByHash($hash)
-    {
-        $cacheKey = substr($hash, 0, 2).'_'.substr($hash, 2, 3);
-
-        $cacheItem = $this->cache->getItem($cacheKey);
-
-        if ($cacheItem->isHit()) {
-            /** @var string $responseBody */
-            $responseBody = $cacheItem->get();
-        } else {
-            try {
-                /** @var ResponseInterface $response */
-                $response = $this->makeRequest($hash);
-            } catch (ConnectException $e) {
-                return PasswordStatus::UNKNOWN;
-            }
-
-            if ($response->getStatusCode() !== 200) {
-                return PasswordStatus::UNKNOWN;
-            }
-
-            /** @var string $responseBody */
-            $responseBody = (string) $response->getBody();
         }
 
-        $cacheItem->set($responseBody);
-        $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
-        $this->cache->save($cacheItem);
+        if (PHP_INT_SIZE === 4 && !extension_loaded('sodium')) {
 
-        return $this->getPasswordStatus($hash, $responseBody);
-    }
-
-    /**
-     * @param string $hash
-     *
-     * @return \Psr\Http\Message\ResponseInterface
-     */
-    private function makeRequest($hash)
-    {
-        $options = [
-            'exceptions' => false,
-            'headers'    => [
-                'User_Agent' => 'password_exposed - https://github.com/DivineOmega/password_exposed',
-            ],
-            'verify' => ($this->bundle->getFilePath()),
-        ];
-
-        return $this->client->request('GET', 'range/'.substr($hash, 0, 5), $options);
-    }
-
-    /**
-     * @param string $hash
-     * @param string $responseBody
-     *
-     * @return string
-     */
-    private function getPasswordStatus($hash, $responseBody)
-    {
-        $hash = strtoupper($hash);
-        $hashSuffix = substr($hash, 5);
-
-        $lines = explode("\r\n", $responseBody);
-
-        foreach ($lines as $line) {
-            list($exposedHashSuffix, $occurrences) = explode(':', $line);
-            if (hash_equals($hashSuffix, $exposedHashSuffix)) {
-                return PasswordStatus::EXPOSED;
-            }
+            // If the platform would run verification checks slowly, use the
+            // latest bundle from the Certainty package and disable verification.
+            return (new Fetch($ourCertaintyDataDir))->getLatestBundle(false, false);
         }
 
-        return PasswordStatus::NOT_EXPOSED;
+        // If the platform can run verification checks well enough, get
+        // latest remote bundle and verify it.
+        return (new RemoteFetch($ourCertaintyDataDir))->getLatestBundle();
     }
 }

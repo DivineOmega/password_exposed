@@ -2,6 +2,7 @@
 
 namespace DivineOmega\PasswordExposed\Tests;
 
+use DivineOmega\DOFileCachePSR6\CacheItemPool;
 use DivineOmega\PasswordExposed\PasswordExposedChecker;
 use DivineOmega\PasswordExposed\PasswordStatus;
 use Faker\Factory;
@@ -14,7 +15,14 @@ class PasswordExposedByHashTest extends TestCase
 
     protected function setUp()
     {
-        $this->checker = new PasswordExposedChecker();
+        $cache = new CacheItemPool();
+        $cache->changeConfig(
+            [
+                'cacheDirectory'  => __DIR__.'/../../cache/dofilecache/',
+                'gzipCompression' => false,
+            ]
+        );
+        $this->checker = new PasswordExposedChecker(null, $cache);
     }
 
     public function testFunctionExists()
@@ -43,6 +51,8 @@ class PasswordExposedByHashTest extends TestCase
     {
         $this->assertEquals($this->checker->passwordExposedByHash($hash), PasswordStatus::EXPOSED);
         $this->assertEquals(password_exposed_by_hash($hash), PasswordStatus::EXPOSED);
+        $this->assertEquals($this->checker->isExposedByHash($hash), true);
+        $this->assertEquals(password_is_exposed_by_hash($hash), true);
     }
 
     public function testNotExposedPasswords()
@@ -54,6 +64,14 @@ class PasswordExposedByHashTest extends TestCase
         $this->assertEquals(
             password_exposed_by_hash($this->getPasswordHashUnlikelyToBeExposed()),
             PasswordStatus::NOT_EXPOSED
+        );
+        $this->assertEquals(
+            $this->checker->isExposedByHash($this->getPasswordHashUnlikelyToBeExposed()),
+            false
+        );
+        $this->assertEquals(
+            password_is_exposed_by_hash($this->getPasswordHashUnlikelyToBeExposed()),
+            false
         );
     }
 
