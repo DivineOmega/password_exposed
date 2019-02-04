@@ -58,8 +58,14 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
 
                 // cache status
                 if ($cacheItem !== null) {
+                    $cacheLifeTime = $this->getCacheLifeTime();
+
+                    if ($cacheLifeTime <= 0) {
+                        $cacheLifeTime = self::CACHE_EXPIRY_SECONDS;
+                    }
+
                     $cacheItem->set($body);
-                    $cacheItem->expiresAfter(self::CACHE_EXPIRY_SECONDS);
+                    $cacheItem->expiresAfter($cacheLifeTime);
                     $cache->save($cacheItem);
                 }
             } catch (ClientExceptionInterface $e) {
