@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\Adapter\NullAdapter;
 
-class BundleInjectionTest extends TestCase
+class CustomInjectionsTest extends TestCase
 {
     public function testConnection()
     {
