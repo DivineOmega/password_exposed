@@ -1,6 +1,6 @@
 <?php
 
-namespace DivineOmega\PasswordExposed;
+namespace DivineOmega\PasswordExposed\Interfaces;
 
 /**
  * Interface PasswordExposedCheckerInterface.

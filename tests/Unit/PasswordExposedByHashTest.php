@@ -4,7 +4,7 @@ namespace DivineOmega\PasswordExposed\Tests;
 
 use DivineOmega\DOFileCachePSR6\CacheItemPool;
 use DivineOmega\PasswordExposed\PasswordExposedChecker;
-use DivineOmega\PasswordExposed\PasswordStatus;
+use DivineOmega\PasswordExposed\Enums\PasswordStatus;
 use Faker\Factory;
 use PHPUnit\Framework\TestCase;
 

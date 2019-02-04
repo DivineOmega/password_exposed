@@ -5,7 +5,7 @@ namespace DivineOmega\PasswordExposed\Tests;
 use Buzz\Client\FileGetContents;
 use DivineOmega\DOFileCachePSR6\CacheItemPool;
 use DivineOmega\PasswordExposed\PasswordExposedChecker;
-use DivineOmega\PasswordExposed\PasswordStatus;
+use DivineOmega\PasswordExposed\Enums\PasswordStatus;
 use Faker\Factory;
 use Http\Discovery\Psr17FactoryDiscovery;
 use ParagonIE\Certainty\Bundle;

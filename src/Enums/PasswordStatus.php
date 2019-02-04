@@ -1,6 +1,8 @@
 <?php
 
-namespace DivineOmega\PasswordExposed;
+namespace DivineOmega\PasswordExposed\Enums;
+
+use DivineOmega\PasswordExposed\Interfaces\PasswordExposedCheckerInterface;
 
 /**
  * Class PasswordStatus.
