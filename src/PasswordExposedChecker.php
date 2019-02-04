@@ -104,14 +104,28 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
     }
 
     /**
+     * {@inheritdoc}
+     */
+    protected function getCacheLifeTime(): int
+    {
+        if ($this->cacheLifeTime === null) {
+            return self::CACHE_EXPIRY_SECONDS;
+        }
+
+        return $this->cacheLifeTime;
+    }
+
+    /**
      * @return CacheItemPool
      */
     protected function createCache(): CacheItemPoolInterface
     {
         $cache = new CacheItemPool();
-        $cache->changeConfig([
-            'cacheDirectory' => sys_get_temp_dir() . '/password-exposed-cache/',
-        ]);
+        $cache->changeConfig(
+            [
+                'cacheDirectory' => sys_get_temp_dir().'/password-exposed-cache/',
+            ]
+        );
 
         return $cache;
     }
