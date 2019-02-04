@@ -157,6 +157,11 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
     abstract protected function getCache(): CacheItemPoolInterface;
 
     /**
+     * @return int
+     */
+    abstract protected function getCacheLifeTime(): int;
+
+    /**
      * @return RequestFactoryInterface
      */
     abstract protected function getRequestFactory(): RequestFactoryInterface;

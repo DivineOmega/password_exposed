@@ -28,6 +28,9 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
     /** @var Bundle|null */
     protected $bundle;
 
+    /** @var int|null */
+    protected $cacheLifeTime;
+
     /** @var RequestFactoryInterface|null */
     protected $requestFactory;
 
@@ -37,20 +40,21 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
     /**
      * @param ClientInterface|null         $client
      * @param CacheItemPoolInterface|null  $cache
-     * @param Bundle|null                  $bundle
+     * @param int|null                     $cacheLifeTime
      * @param RequestFactoryInterface|null $requestFactory
      * @param UriFactoryInterface|null     $uriFactory
      */
     public function __construct(
         ?ClientInterface $client = null,
         ?CacheItemPoolInterface $cache = null,
-        ?Bundle $bundle = null,
+        ?int $cacheLifeTime = null,
         ?RequestFactoryInterface $requestFactory = null,
         ?UriFactoryInterface $uriFactory = null
-    ) {
+    )
+    {
         $this->client = $client;
         $this->cache = $cache;
-        $this->bundle = $bundle;
+        $this->cacheLifeTime = $cacheLifeTime;
         $this->requestFactory = $requestFactory;
         $this->uriFactory = $uriFactory;
     }
@@ -106,7 +110,7 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
     {
         $cache = new CacheItemPool();
         $cache->changeConfig([
-            'cacheDirectory' => sys_get_temp_dir().'/password-exposed-cache/',
+            'cacheDirectory' => sys_get_temp_dir() . '/password-exposed-cache/',
         ]);
 
         return $cache;
@@ -165,6 +169,14 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
     }
 
     /**
+     * @param Bundle $bundle
+     */
+    public function setBundle(Bundle $bundle): void
+    {
+        $this->bundle = $bundle;
+    }
+
+    /**
      * @return Bundle
      */
     protected function createBundle(): ?Bundle
@@ -184,7 +196,7 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
      */
     protected function getBundleFromCertainty(): Bundle
     {
-        $ourCertaintyDataDir = __DIR__.'/../bundles';
+        $ourCertaintyDataDir = __DIR__ . '/../bundles';
 
         if (!is_writable($ourCertaintyDataDir)) {
 
