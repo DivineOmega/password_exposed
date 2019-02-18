@@ -70,9 +70,9 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
     }
 
     /**
-     * @return ClientInterface
+     * @return ClientInterface|\GuzzleHttp\ClientInterface
      */
-    protected function createClient(): ClientInterface
+    protected function createClient()
     {
         $options = [
             'timeout' => 3,
