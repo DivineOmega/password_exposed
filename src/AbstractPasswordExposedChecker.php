@@ -4,9 +4,9 @@ namespace DivineOmega\PasswordExposed;
 
 use DivineOmega\PasswordExposed\Enums\PasswordStatus;
 use DivineOmega\PasswordExposed\Interfaces\PasswordExposedCheckerInterface;
+use Http\Client\HttpClient;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Http\Client\ClientExceptionInterface;
-use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriFactoryInterface;
@@ -154,9 +154,9 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
     }
 
     /**
-     * @return ClientInterface|\GuzzleHttp\ClientInterface
+     * @return \Http\Client\HttpClient
      */
-    abstract protected function getClient();
+    abstract protected function getClient(): HttpClient;
 
     /**
      * @return CacheItemPoolInterface

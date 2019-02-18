@@ -4,12 +4,12 @@ namespace DivineOmega\PasswordExposed;
 
 use DivineOmega\DOFileCachePSR6\CacheItemPool;
 use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
+use Http\Client\HttpClient;
 use Http\Discovery\Psr17FactoryDiscovery;
 use ParagonIE\Certainty\Bundle;
 use ParagonIE\Certainty\Fetch;
 use ParagonIE\Certainty\RemoteFetch;
 use Psr\Cache\CacheItemPoolInterface;
-use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\UriFactoryInterface;
 
@@ -18,7 +18,7 @@ use Psr\Http\Message\UriFactoryInterface;
  */
 class PasswordExposedChecker extends AbstractPasswordExposedChecker
 {
-    /** @var ClientInterface|null */
+    /** @var HttpClient|null */
     protected $client;
 
     /** @var CacheItemPoolInterface|null */
@@ -37,14 +37,14 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
     protected $uriFactory;
 
     /**
-     * @param ClientInterface|null         $client
+     * @param HttpClient|null              $client
      * @param CacheItemPoolInterface|null  $cache
      * @param int|null                     $cacheLifeTime
      * @param RequestFactoryInterface|null $requestFactory
      * @param UriFactoryInterface|null     $uriFactory
      */
     public function __construct(
-        ?ClientInterface $client = null,
+        ?HttpClient $client = null,
         ?CacheItemPoolInterface $cache = null,
         ?int $cacheLifeTime = null,
         ?RequestFactoryInterface $requestFactory = null,
@@ -60,7 +60,7 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
     /**
      * {@inheritdoc}
      */
-    protected function getClient()
+    protected function getClient(): HttpClient
     {
         if ($this->client === null) {
             $this->client = $this->createClient();
@@ -70,9 +70,9 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
     }
 
     /**
-     * @return ClientInterface|\GuzzleHttp\ClientInterface
+     * @return HttpClient
      */
-    protected function createClient()
+    protected function createClient(): HttpClient
     {
         $options = [
             'timeout' => 3,
