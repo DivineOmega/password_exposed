@@ -154,9 +154,9 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
     }
 
     /**
-     * @return ClientInterface
+     * @return ClientInterface|\GuzzleHttp\ClientInterface
      */
-    abstract protected function getClient(): ClientInterface;
+    abstract protected function getClient();
 
     /**
      * @return CacheItemPoolInterface

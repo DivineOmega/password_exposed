@@ -60,7 +60,7 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
     /**
      * {@inheritdoc}
      */
-    protected function getClient(): ClientInterface
+    protected function getClient()
     {
         if ($this->client === null) {
             $this->client = $this->createClient();
