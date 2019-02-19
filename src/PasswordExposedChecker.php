@@ -3,7 +3,7 @@
 namespace DivineOmega\PasswordExposed;
 
 use DivineOmega\DOFileCachePSR6\CacheItemPool;
-use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
+use DivineOmega\Psr18GuzzleAdapter\Client;
 use Http\Discovery\Psr17FactoryDiscovery;
 use ParagonIE\Certainty\Bundle;
 use ParagonIE\Certainty\Fetch;
@@ -86,7 +86,7 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
             $options['verify'] = $bundle->getFilePath();
         }
 
-        return GuzzleAdapter::createWithConfig($options);
+        return new Client($options);
     }
 
     /**
