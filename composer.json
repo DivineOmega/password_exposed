@@ -28,7 +28,7 @@
         "psr/http-factory-implementation": "^1.0",
         "php-http/discovery": "^1.6",
         "nyholm/psr7": "^1.0",
-        "paragonie/certainty": "^1|^2",
+        "paragonie/certainty": ">= 2.4",
         "divineomega/do-file-cache-psr-6": "^2.0",
         "divineomega/psr-18-guzzle-adapter": "^1.0"
     },

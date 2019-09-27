@@ -4,6 +4,7 @@ namespace DivineOmega\PasswordExposed;
 
 use DivineOmega\DOFileCachePSR6\CacheItemPool;
 use DivineOmega\Psr18GuzzleAdapter\Client;
+use GuzzleHttp\Exception\ConnectException;
 use Http\Discovery\Psr17FactoryDiscovery;
 use ParagonIE\Certainty\Bundle;
 use ParagonIE\Certainty\Fetch;
@@ -226,6 +227,18 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
 
         // If the platform can run verification checks well enough, get
         // latest remote bundle and verify it.
-        return (new RemoteFetch($ourCertaintyDataDir))->getLatestBundle();
+        try {
+            // Try the replication server first, since the upstream server
+            // is under tremendous load.
+            return (new RemoteFetch($ourCertaintyDataDir))
+                ->setChronicle(
+                    'https://php-chronicle-replica.pie-hosted.com/chronicle/replica/_vi6Mgw6KXBSuOFUwYA2H2GEPLawUmjqFJbCCuqtHzGZ',
+                    'MoavD16iqe9-QVhIy-ewD4DMp0QRH-drKfwhfeDAUG0='
+                )
+                ->getLatestBundle();
+        } catch (ConnectException $ex) {
+            // Fallback to the main server.
+            return (new RemoteFetch($ourCertaintyDataDir))->getLatestBundle();
+        }
     }
 }
