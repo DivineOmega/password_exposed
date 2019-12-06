@@ -37,7 +37,7 @@
         "fzaninotto/faker": "^1.7",
         "vimeo/psalm": "^1",
         "kriswallsmith/buzz": "^1.0",
-        "symfony/cache": "^3.4|^4.0",
+        "symfony/cache": "^4.2.12",
         "php-coveralls/php-coveralls": "^2.1"
     },
     "autoload": {
