@@ -21,8 +21,8 @@ class CustomInjectionsTest extends TestCase
 
         $passwordExposedChecker = new PasswordExposedChecker(null, $cache);
 
-        $this->assertEquals(true, $passwordExposedChecker->isExposed('hunter2'));
-        $this->assertEquals(false, $passwordExposedChecker->isExposed($this->getPasswordHashUnlikelyToBeExposed()));
+        $this->assertTrue($passwordExposedChecker->isExposed('hunter2'));
+        $this->assertFalse($passwordExposedChecker->isExposed($this->getPasswordHashUnlikelyToBeExposed()));
     }
 
     public function testCustomLibrary()
