@@ -13,7 +13,7 @@ class PasswordExposedTest extends TestCase
     /** @var PasswordExposedChecker */
     private $checker;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $cache = new CacheItemPool();
         $cache->changeConfig(
@@ -46,8 +46,8 @@ class PasswordExposedTest extends TestCase
     {
         $this->assertEquals($this->checker->passwordExposed($password), PasswordStatus::EXPOSED);
         $this->assertEquals(password_exposed($password), PasswordStatus::EXPOSED);
-        $this->assertEquals($this->checker->isExposed($password), true);
-        $this->assertEquals(password_is_exposed($password), true);
+        $this->assertTrue($this->checker->isExposed($password));
+        $this->assertTrue(password_is_exposed($password));
     }
 
     public function testNotExposedPasswords()
