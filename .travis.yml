@@ -10,8 +10,6 @@ matrix:
   allow_failures:
     -   php: nightly
 install:
-  - composer self-update --1
-  - composer --version
   - composer install
 script:
   - ./vendor/bin/phpunit --coverage-clover ./tests/Logs/clover.xml
