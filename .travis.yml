@@ -15,7 +15,6 @@ install:
   - composer install
 script:
   - ./vendor/bin/phpunit --coverage-clover ./tests/Logs/clover.xml
-  - if [[ ${TRAVIS_PHP_VERSION:0:3} == "8.0" ]]; then composer require --dev vimeo/psalm:1.1.9; else composer require --dev vimeo/psalm:1.1.8; fi
   - ./vendor/bin/psalm
 after_script:
   - php vendor/bin/php-coveralls -v
