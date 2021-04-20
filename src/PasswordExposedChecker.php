@@ -166,7 +166,7 @@ class PasswordExposedChecker extends AbstractPasswordExposedChecker
      */
     protected function createUriFactory(): UriFactoryInterface
     {
-        return Psr17FactoryDiscovery::findUrlFactory();
+        return Psr17FactoryDiscovery::findUriFactory();
     }
 
     /**
