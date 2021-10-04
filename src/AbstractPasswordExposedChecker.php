@@ -106,7 +106,7 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
     }
 
     /**
-     * @param $hash
+     * @param string $hash
      *
      * @throws \Psr\Http\Client\ClientExceptionInterface
      *
@@ -121,7 +121,7 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
     }
 
     /**
-     * @param $string
+     * @param string $string
      *
      * @return string
      */
