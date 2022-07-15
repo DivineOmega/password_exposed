@@ -144,6 +144,9 @@ abstract class AbstractPasswordExposedChecker implements PasswordExposedCheckerI
         $lines = explode("\r\n", $responseBody);
 
         foreach ($lines as $line) {
+            if (strpos($line,':') === false) {
+                continue;
+            }
             list($exposedHashSuffix, $occurrences) = explode(':', $line);
             if (hash_equals($hashSuffix, $exposedHashSuffix)) {
                 return PasswordStatus::EXPOSED;
